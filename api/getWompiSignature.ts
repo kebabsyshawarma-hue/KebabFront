@@ -19,6 +19,7 @@ export default async (req: VercelRequest, res: VercelResponse) => {
   try {
     console.log('Received request for getWompiSignature');
     console.log('Request body:', req.body);
+    console.log('All process.env variables:', process.env);
     console.log('WOMPI_INTEGRITY_SECRET (first 5 chars):', process.env.WOMPI_INTEGRITY_SECRET?.substring(0, 5));
 
     const { reference, amount } = req.body;

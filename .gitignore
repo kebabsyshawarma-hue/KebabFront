@@ -24,3 +24,5 @@ kebabsyshawarma-9b19b-firebase-adminsdk-fbsvc-20bce18b74.json
 *.njsproj
 *.sln
 *.sw?
+
+.vercel

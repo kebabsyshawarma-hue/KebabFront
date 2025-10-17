@@ -17,12 +17,23 @@ export default async (req: VercelRequest, res: VercelResponse) => {
   }
 
   try {
+    console.log('Received request for getWompiSignature');
+    console.log('Request body:', req.body);
+    console.log('WOMPI_INTEGRITY_SECRET (first 5 chars):', process.env.WOMPI_INTEGRITY_SECRET?.substring(0, 5));
+
     const { reference, amount } = req.body;
 
     const wompiIntegritySecret = process.env.WOMPI_INTEGRITY_SECRET;
 
     if (!wompiIntegritySecret) {
+      console.error('WOMPI_INTEGRITY_SECRET is not configured.');
       res.status(500).json({ error: 'Wompi integrity secret is not configured.' });
+      return;
+    }
+
+    if (!reference || !amount) {
+      console.error('Missing reference or amount in request body.', { reference, amount });
+      res.status(400).json({ error: 'Missing reference or amount in request body.' });
       return;
     }
 

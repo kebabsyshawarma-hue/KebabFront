@@ -72,12 +72,13 @@ export default function CheckoutPage() {
         body: JSON.stringify({ reference, amount: total }),
       });
 
+      const responseData = await response.json();
+
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Error al generar la firma de pago.');
+        throw new Error(responseData.error || 'Error al generar la firma de pago.');
       }
 
-      const { signature } = await response.json();
+      const { signature } = responseData;
 
       const checkout = new window.WidgetCheckout({
         currency: 'COP',
@@ -120,6 +121,7 @@ export default function CheckoutPage() {
       });
 
     } catch (err) {
+      console.error('Error in handleWompiPayment:', err);
       setError(err.message || 'Ocurrió un error al procesar el pago con Wompi.');
       setIsSubmitting(false);
     }

@@ -1,0 +1,87 @@
+:root {
+  --background: #000000; /* Black background */
+  --foreground: #FFD700; /* Gold/Yellow text */
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #000000; /* Black background */
+    --foreground: #FFD700; /* Gold/Yellow text */
+  }
+}
+
+html,
+body {
+  height: 100%;
+  touch-action: manipulation;
+  background-color: #1a1a1a;
+}
+
+body {
+  overflow-y: auto;
+}
+
+body > div[style*="position: fixed"][style*="z-index: 9999"],
+body > div[id*="wompi"],
+body > div[class*="wompi"] {
+  z-index: 99999 !important;
+}
+
+body > div[style*="position: fixed"][style*="z-index: 9998"] {
+  z-index: 99998 !important;
+}
+
+
+/* Hide social widgets on checkout page */
+.hide-social-widgets ~ .whatsapp-widget,
+.hide-social-widgets ~ .social-widgets {
+  display: none !important;
+}
+
+/* Social Widgets Styles */
+.social-widgets {
+  position: fixed;
+  top: 50%;
+  left: 0;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  z-index: 1000;
+}
+
+.social-widgets a {
+  background-color: rgba(165, 42, 42, 0.5);
+  font-size: 24px;
+  padding: 10px;
+  transition: all 0.3s ease;
+  display: block;
+  border-radius: 0;
+}
+
+.social-widgets a span {
+  display: inline-block;
+  transition: transform 0.3s ease;
+}
+
+.social-widgets a:first-child {
+  border-radius: 0 10px 0 0;
+}
+
+.social-widgets a:last-child {
+  border-radius: 0 0 10px 0;
+}
+
+.social-widgets a:hover {
+  background-color: #8B0000;
+  color: var(--foreground); /* Keep this for text that might appear in the future */
+  padding-right: 30px;
+}
+
+.social-widgets a:hover span {
+  transform: translateX(15px);
+}
+
+.social-widgets a i {
+  color: var(--foreground);
+}

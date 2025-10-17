@@ -1,0 +1,16 @@
+[
+  {
+    "title": "El Sabor Autentico del Kebab",
+    "subtitle": "Ven y Pruebalos",
+    "image": "https://res.cloudinary.com/duzoveyjo/image/upload/v1759169893/herohorizontal_k7jlv4.jpg",
+    "type": "horizontal",
+    "id": 4
+  },
+  {
+    "title": "Tu Kebab Favorito a Domicilio",
+    "subtitle": "Realiza tu pedido y paga directamente en nuestra web",
+    "image": "https://res.cloudinary.com/duzoveyjo/image/upload/v1759169884/herovertical2_stcriv.jpg",
+    "type": "vertical",
+    "id": 5
+  }
+]

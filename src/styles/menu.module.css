@@ -1,0 +1,199 @@
+.pageContainer {
+  font-family: sans-serif;
+  background-color: #1a1a1a;
+}
+
+.categoryNav {
+  position: sticky;
+  top: 0;
+  background-color: black;
+  padding: 1rem;
+  display: flex;
+  overflow-x: auto;
+  white-space: nowrap;
+  border-bottom: 1px solid #e0e0e0;
+  z-index: 10;
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
+.categoryNav::-webkit-scrollbar {
+  display: none;
+}
+
+.fixed {
+  position: fixed;
+  left: 0;
+  width: 100%;
+  z-index: 999;
+}
+
+.categoryButton {
+  padding: 0.5rem 1rem;
+  margin-right: 1rem;
+  border: 1px solid #e0e0e0;
+  border-radius: 20px;
+  background-color: black;
+  color: #ffcc00;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+.categoryButton:hover {
+  background-color: #e0e0e0;
+}
+
+.categoryButton.active {
+  background-color: #ffcc00;
+  color: black;
+  border-color: #333;
+}
+
+.menuContainer {
+  padding: 1rem;
+}
+
+.categorySection {
+  margin-bottom: 2rem;
+}
+
+.categoryTitle {
+  font-size: 1.8rem;
+  margin-bottom: 1rem;
+  padding: 0.5rem 1rem;
+  background-color: black;
+  color: #ffcc00;
+  display: inline-block;
+  border-radius: 5px;
+}
+
+
+.itemsGrid {
+  display: flex;
+  overflow-x: auto;
+  white-space: nowrap;
+  gap: 1.5rem;
+  padding-bottom: 1rem; /* Add some padding for the scrollbar */
+  -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+}
+
+.itemsGrid::-webkit-scrollbar {
+  height: 8px;
+}
+
+.itemsGrid::-webkit-scrollbar-thumb {
+  background-color: #ffcc00;
+  border-radius: 10px;
+}
+
+.itemsGrid::-webkit-scrollbar-track {
+  background-color: #333;
+}
+
+.menuItem {
+  display: flex;
+  flex-direction: column;
+  flex: 0 0 auto; /* Prevent items from growing or shrinking */
+  width: 300px; /* Set a fixed width for each item */
+  background-color: #333; /* Add a background to the card */
+  border-radius: 8px;
+  overflow: hidden; /* To contain the image border radius */
+}
+
+.itemInfo {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  padding: 1rem;
+  white-space: normal;
+}
+
+.itemName {
+  font-size: 1.2rem;
+  font-weight: bold;
+  margin-bottom: 0.5rem;
+  padding: 0.5rem 1rem;
+  background-color: black;
+  color: #ffcc00;
+  display: inline-block;
+  border-radius: 5px;
+}
+
+.itemDescription {
+  font-size: 0.9rem;
+  color: white;
+  margin-bottom: 1rem;
+  word-wrap: break-word;
+}
+
+
+.itemPrice {
+  font-size: 1.1rem;
+  font-weight: bold;
+  color: white;
+}
+
+.itemImageContainer {
+  width: 100%;
+  height: 150px;
+  position: relative;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.itemImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.itemFooter {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: auto;
+}
+
+.itemKcal {
+  font-size: 0.9rem;
+  color: white;
+}
+
+@media (max-width: 992px) {
+  .menuItem {
+    width: 280px; /* Slightly smaller fixed width for tablets */
+  }
+}
+
+/* Mobile (e.g., up to 768px) */
+@media (max-width: 768px) {
+  .menuItem {
+    width: 250px; /* Fixed width for mobile */
+    padding: 0.8rem; /* Slightly less padding */
+  }
+  .itemImageContainer {
+    height: 120px; /* Adjust image height for smaller screens */
+  }
+  .itemName {
+    font-size: 1rem; /* Smaller font size */
+  }
+  .itemDescription {
+    font-size: 0.85rem; /* Smaller font size */
+  }
+  .itemPrice {
+    font-size: 1rem; /* Smaller font size */
+  }
+
+  .categoryNav {
+    padding: 0.8rem; /* Slightly less padding */
+  }
+  .categoryButton {
+    padding: 0.4rem 0.8rem; /* Smaller padding */
+    font-size: 0.8rem; /* Smaller font size */
+    margin-right: 0.8rem; /* Smaller margin */
+  }
+  .categoryTitle {
+    font-size: 1.5rem; /* Smaller title for mobile */
+  }
+}

@@ -1,0 +1,31 @@
+/* Scroll Transition Styles */
+.heroSection {
+  transition: opacity 0.5s ease-out, transform 0.5s ease-out;
+}
+
+.scrolledPast {
+  pointer-events: none; /* Desactiva eventos de mouse cuando está oculto */
+}
+
+/* Hero Section Responsiveness */
+.heroSlideContent {
+  height: 100vh; /* Default for larger screens */
+}
+
+@media (max-width: 768px) {
+  .heroSlideContent {
+    height: 100vh; /* Full height for mobile */
+  }
+
+  /* Adjust Bootstrap text sizes for mobile */
+  .display4 {
+    font-size: 2.5rem; /* Smaller h1 */
+  }
+  .lead {
+    font-size: 1rem; /* Smaller lead paragraph */
+  }
+  .btnLg {
+    padding: 0.5rem 1rem; /* Smaller button padding */
+    font-size: 0.9rem; /* Smaller button font */
+  }
+}

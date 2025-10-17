@@ -1,0 +1,10 @@
+/* Footer Responsiveness */
+@media (max-width: 768px) {
+  .footerText {
+    font-size: 0.8rem; /* Smaller font size for footer text */
+  }
+  .footerMx2 {
+    margin-left: 0.5rem !important;
+    margin-right: 0.5rem !important;
+  }
+}

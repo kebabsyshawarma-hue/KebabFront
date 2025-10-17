@@ -1,0 +1,58 @@
+/* Estilo general del layout de admin */
+.admin-layout {
+  display: flex;
+  min-height: 100vh;
+  background-color: #f8f9fa; /* Un gris muy claro para el fondo del contenido */
+}
+
+/* Barra lateral de navegación */
+.admin-sidebar {
+  width: 240px;
+  background-color: #343a40; /* Un color oscuro para la barra */
+  color: #ffffff;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.sidebar-title {
+  font-size: 1.75rem;
+  text-align: center;
+  margin-bottom: 2rem;
+  color: #ffffff;
+  font-weight: bold;
+}
+
+.nav-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.nav-link {
+  display: block;
+  padding: 0.9rem 1.2rem;
+  margin-bottom: 0.5rem;
+  color: #adb5bd; /* Un color de texto más suave */
+  text-decoration: none;
+  border-radius: 6px;
+  transition: background-color 0.2s ease, color 0.2s ease;
+  font-size: 1rem;
+}
+
+.nav-link:hover {
+  background-color: #495057;
+  color: #ffffff;
+}
+
+/* Contenido principal que se muestra a la derecha */
+.main-content {
+  flex: 1;
+  padding: 2rem;
+  overflow-y: auto; /* Permite scroll si el contenido es muy largo */
+}
+
+/* Estilos para que los títulos dentro de las páginas no se peguen al borde */
+.main-content h1 {
+    margin-top: 0;
+}

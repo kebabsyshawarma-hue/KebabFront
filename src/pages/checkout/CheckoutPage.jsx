@@ -102,16 +102,6 @@ export default function CheckoutPage() {
         console.log('Wompi transaction result:', transaction);
         console.log(`Attempting to update order ${orderId} with status: ${newStatus}`);
 
-        // Update order status in the backend
-        try {
-          const orderRef = doc(db, 'orders', orderId);
-          await updateDoc(orderRef, { status: newStatus });
-          console.log('Order status updated successfully in backend.');
-        } catch (updateError) {
-          console.error('Failed to update order status:', updateError);
-          // Decide if you want to show this error to the user or just log it
-        }
-
         if (transaction.status === 'APPROVED') {
           clearCart();
           navigate('/checkout/success');

@@ -6,9 +6,11 @@ export default function AdminDashboard() {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('All'); // 'All', 'Pending', 'Approved', etc.
+
+  const [showModal, setShowModal] = useState(false);
+  const [selectedOrder, setSelectedOrder] = useState(null);
 
   useEffect(() => {
     async function fetchOrders() {
@@ -48,6 +50,16 @@ export default function AdminDashboard() {
       console.error('Error updating order status:', e);
       alert(`Error al actualizar el estado del pedido: ${e.message}`);
     }
+  };
+
+  const handleViewDetails = (order) => {
+    setSelectedOrder(order);
+    setShowModal(true);
+  };
+
+  const handleCloseModal = () => {
+    setShowModal(false);
+    setSelectedOrder(null);
   };
 
   const filteredOrders = orders.filter((order) => {
@@ -109,25 +121,25 @@ export default function AdminDashboard() {
           <table className="table table-striped table-hover">
             <thead>
               <tr>
-                <th>ID Pedido</th>
                 <th>Fecha</th>
                 <th>Cliente</th>
                 <th>Teléfono</th>
                 <th>Dirección</th>
                 <th>Total</th>
                 <th>Estado</th>
-                <th>Detalles</th>
+                <th>Acciones</th>
+                <th>Detalles del Pedido</th>
               </tr>
             </thead>
             <tbody>
               {filteredOrders.map((order) => (
                 <tr key={order.id}>
-                  <td>{order.id}</td>
-                  <td>{new Date(order.orderDate).toLocaleString()}</td>
+                  <td>{order.createdAt?.toDate().toLocaleString()}</td>
                   <td>{order.customerInfo.name}</td>
                   <td>{order.customerInfo.phone}</td>
                   <td>{order.customerInfo.address}</td>
                   <td>${order.total.toLocaleString('es-CO')}</td>
+                  <td>{order.status}</td>
                   <td>
                     <select
                       className="form-select form-select-sm"
@@ -144,7 +156,7 @@ export default function AdminDashboard() {
                   <td>
                     <button
                       className="btn btn-sm btn-info"
-                      onClick={() => alert(`Detalles del Pedido ${order.id}:\n${order.orderItems.map(item => `- ${item.name} (x${item.quantity})`).join('\n')}`)}
+                      onClick={() => handleViewDetails(order)}
                     >
                       Ver
                     </button>
@@ -155,6 +167,44 @@ export default function AdminDashboard() {
           </table>
         </div>
       )}
+
+      {/* Order Details Modal */}
+      {selectedOrder && (
+        <div className={`modal fade ${showModal ? 'show' : ''}`} style={{ display: showModal ? 'block' : 'none' }} tabIndex="-1" aria-labelledby="orderDetailsModalLabel" aria-hidden={!showModal}>
+          <div className="modal-dialog modal-dialog-centered modal-lg">
+            <div className="modal-content">
+              <div className="modal-header">
+                <h5 className="modal-title" id="orderDetailsModalLabel">Detalles del Pedido #{selectedOrder.id}</h5>
+                <button type="button" className="btn-close" aria-label="Close" onClick={handleCloseModal}></button>
+              </div>
+              <div className="modal-body">
+                <h6>Cliente: {selectedOrder.customerInfo.name}</h6>
+                <p>Email: {selectedOrder.customerInfo.email}</p>
+                <p>Teléfono: {selectedOrder.customerInfo.phone}</p>
+                <p>Dirección: {selectedOrder.customerInfo.address}</p>
+                <p>Método de Pago: {selectedOrder.paymentMethod}</p>
+                <p>Estado: {selectedOrder.status}</p>
+                <p>Fecha: {selectedOrder.createdAt?.toDate().toLocaleString()}</p>
+                <hr />
+                <h6>Items del Pedido:</h6>
+                <ul className="list-group mb-3">
+                  {selectedOrder.orderItems.map((item, index) => (
+                    <li key={index} className="list-group-item d-flex justify-content-between align-items-center">
+                      {item.name} (x{item.quantity})
+                      <span>${item.price.toLocaleString('es-CO')}</span>
+                    </li>
+                  ))}
+                </ul>
+                <h5>Total: ${selectedOrder.total.toLocaleString('es-CO')}</h5>
+              </div>
+              <div className="modal-footer">
+                <button type="button" className="btn btn-secondary" onClick={handleCloseModal}>Cerrar</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+      {showModal && <div className="modal-backdrop fade show"></div>}
     </div>
   );
 }

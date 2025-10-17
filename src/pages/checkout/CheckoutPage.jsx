@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCart } from '../../context/CartContext.jsx'; // Adjusted path
 import styles from '../../styles/checkout.module.css'; // Adjusted path
+import { db } from '../../firebase.js';
+import { addDoc, collection, doc, updateDoc, serverTimestamp } from 'firebase/firestore';
 
 
 
@@ -62,8 +64,7 @@ export default function CheckoutPage() {
 
     try {
       const reference = `kebab_${orderId}`;
-      // TODO: Replace with Firebase Function URL
-      const response = await fetch('http://127.0.0.1:5001/demo-no-project/us-central1/getWompiSignature', {
+      const response = await fetch('/api/getWompiSignature', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -102,23 +103,11 @@ export default function CheckoutPage() {
 
         // Update order status in the backend
         try {
-          // TODO: Replace with Firebase Function URL
-          const updateResponse = await fetch('http://127.0.0.1:5001/demo-no-project/us-central1/updateOrderStatus', {
-            method: 'PATCH',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ id: orderId, status: newStatus }),
-          });
-
-          if (!updateResponse.ok) {
-            const errorData = await updateResponse.json();
-            console.error('Error updating order status in backend:', errorData);
-            throw new Error(errorData.message || 'Error al actualizar el estado del pedido.');
-          }
+          const orderRef = doc(db, 'orders', orderId);
+          await updateDoc(orderRef, { status: newStatus });
           console.log('Order status updated successfully in backend.');
         } catch (updateError) {
-          console.error('Failed to send order status update PATCH request:', updateError);
+          console.error('Failed to update order status:', updateError);
           // Decide if you want to show this error to the user or just log it
         }
 
@@ -160,26 +149,13 @@ export default function CheckoutPage() {
         total,
         paymentMethod,
         status: paymentMethod === 'wompi' ? 'Pending' : 'Pending',
-        orderDate: new Date().toISOString(),
+        createdAt: serverTimestamp(),
       };
 
-      // TODO: Replace with Firebase Function URL
-      const response = await fetch('http://127.0.0.1:5001/demo-no-project/us-central1/addOrder', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(order),
-      });
-
-      if (!response.ok) {
-        throw new Error(`Error al procesar el pedido: ${response.statusText}`);
-      }
-
-      const createdOrder = await response.json();
+      const docRef = await addDoc(collection(db, 'orders'), order);
 
       if (paymentMethod === 'wompi') {
-        await handleWompiPayment(createdOrder.order.id);
+        await handleWompiPayment(docRef.id);
         return;
       }
 
@@ -191,6 +167,7 @@ export default function CheckoutPage() {
       setIsSubmitting(false);
     }
   };
+
 
   return (
     <>

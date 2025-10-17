@@ -1,6 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import * as crypto from 'crypto';
-import { db } from '../_lib/firebase';
+import { db } from './_lib/firebase';
 import { doc, updateDoc } from 'firebase/firestore';
 
 export default async (req: VercelRequest, res: VercelResponse) => {

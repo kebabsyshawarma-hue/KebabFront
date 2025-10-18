@@ -2,7 +2,8 @@ import { useState, useEffect } from 'react';
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-// import { MenuItem as ProductItem, Category as ProductCategory } from '../../../types'; // types.js is now empty
+import { db } from '../../firebase';
+import { collection, getDocs, addDoc, doc, updateDoc, deleteDoc, writeBatch } from 'firebase/firestore';
 
 function SortableItem(props) {
   const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id: props.item.id });
@@ -78,17 +79,23 @@ export default function AdminMenuPage() {
     })
   );
 
-  const fetchMenu = async () => {
+  const menuCollectionRef = collection(db, 'menu');
+  const categoriesCollectionRef = collection(db, 'categories');
+
+  const fetchMenuAndCategories = async () => {
     try {
       setLoading(true);
-      // TODO: Replace with Firebase Function URL
-      const response = await fetch('http://127.0.0.1:5001/demo-no-project/us-central1/getMenu');
-      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-      const data = await response.json();
-      const allItems = data.categories.flatMap((category) => 
-        category.items.map((item) => ({ ...item, category: category.name }))
-      ).sort((a, b) => a.order - b.order);
-      setMenu(allItems);
+      const [menuSnapshot, categoriesSnapshot] = await Promise.all([
+        getDocs(menuCollectionRef),
+        getDocs(categoriesCollectionRef),
+      ]);
+
+      const menuData = menuSnapshot.docs.map(doc => ({ ...doc.data(), id: doc.id })).sort((a, b) => a.order - b.order);
+      const categoriesData = categoriesSnapshot.docs.map(doc => ({ ...doc.data(), id: doc.id })).sort((a, b) => a.order - b.order);
+
+      setMenu(menuData);
+      setCategories(categoriesData);
+
     } catch (e) {
       setError(e.message);
     } finally {
@@ -96,21 +103,8 @@ export default function AdminMenuPage() {
     }
   };
 
-  const fetchCategories = async () => {
-    try {
-      // TODO: Replace with Firebase Function URL
-      const response = await fetch('http://127.0.0.1:5001/demo-no-project/us-central1/getCategories');
-      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-      const data = await response.json();
-      setCategories(data.sort((a, b) => a.order - b.order));
-    } catch (e) {
-      console.error("Failed to fetch categories", e);
-    }
-  };
-
   useEffect(() => {
-    fetchMenu();
-    fetchCategories();
+    fetchMenuAndCategories();
   }, []);
 
   const openModalForNew = () => {
@@ -143,28 +137,21 @@ export default function AdminMenuPage() {
 
   const handleFormSubmit = async (e) => {
     e.preventDefault();
-    // TODO: Replace with Firebase Function URL
-    const url = editingItem ? `http://127.0.0.1:5001/demo-no-project/us-central1/manageMenuItem/${editingItem.id}` : 'http://127.0.0.1:5001/demo-no-project/us-central1/addMenuItem';
-    const method = editingItem ? 'PUT' : 'POST';
-
     const body = {
       ...formState,
       price: parseFloat(formState.price),
-      kcal: formState.kcal ? parseInt(formState.kcal) : undefined,
-      order: editingItem ? editingItem.order : menu.length,
+      kcal: formState.kcal ? parseInt(formState.kcal) : 0,
     };
 
     try {
-      const response = await fetch(url, {
-        method,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
-      });
-      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-      
-      await fetchMenu();
+      if (editingItem) {
+        const itemDoc = doc(db, 'menu', editingItem.id);
+        await updateDoc(itemDoc, body);
+      } else {
+        await addDoc(menuCollectionRef, { ...body, order: menu.length });
+      }
+      await fetchMenuAndCategories();
       closeModal();
-
     } catch (e) {
       alert(`Error: ${e.message}`);
     }
@@ -173,10 +160,9 @@ export default function AdminMenuPage() {
   const handleDeleteItem = async (id) => {
     if (!confirm('¿Estás seguro de que quieres eliminar este producto?')) return;
     try {
-      // TODO: Replace with Firebase Function URL
-      const response = await fetch(`http://127.0.0.1:5001/demo-no-project/us-central1/manageMenuItem/${id}`, { method: 'DELETE' });
-      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-      await fetchMenu();
+      const itemDoc = doc(db, 'menu', id);
+      await deleteDoc(itemDoc);
+      await fetchMenuAndCategories();
     } catch (e) {
       alert(`Error al eliminar producto: ${e.message}`);
     }
@@ -186,15 +172,9 @@ export default function AdminMenuPage() {
     e.preventDefault();
     if (!newCategoryName) return;
     try {
-      // TODO: Replace with Firebase Function URL
-      const response = await fetch('http://127.0.0.1:5001/demo-no-project/us-central1/addCategory', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: newCategoryName, order: categories.length }),
-      });
-      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+      await addDoc(categoriesCollectionRef, { name: newCategoryName, order: categories.length });
       setNewCategoryName('');
-      fetchCategories();
+      await fetchMenuAndCategories();
       setIsCategoryModalOpen(false);
     } catch (e) {
       alert(`Error: ${e.message}`);
@@ -203,39 +183,35 @@ export default function AdminMenuPage() {
 
   async function handleDragEnd(event) {
     const { active, over } = event;
-
     if (active.id !== over?.id) {
       setMenu((items) => {
         const oldIndex = items.findIndex(item => item.id === active.id);
         const newIndex = items.findIndex(item => item.id === over.id);
-        const newItems = arrayMove(items, oldIndex, newIndex);
-        return newItems.map((item, index) => ({ ...item, order: index }));
+        return arrayMove(items, oldIndex, newIndex);
       });
     }
   }
 
   async function handleCategoryDragEnd(event) {
     const { active, over } = event;
-
     if (active.id !== over?.id) {
       setCategories((items) => {
         const oldIndex = items.findIndex(item => item.id === active.id);
         const newIndex = items.findIndex(item => item.id === over.id);
-        const newItems = arrayMove(items, oldIndex, newIndex);
-        return newItems.map((item, index) => ({ ...item, order: index }));
+        return arrayMove(items, oldIndex, newIndex);
       });
     }
   }
 
   const saveOrder = async () => {
     try {
-      // TODO: Replace with Firebase Function URL
-      const response = await fetch('http://127.0.0.1:5001/demo-no-project/us-central1/updateMenuOrder', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(menu),
+      const batch = writeBatch(db);
+      menu.forEach((item, index) => {
+        const itemDoc = doc(db, 'menu', item.id);
+        batch.update(itemDoc, { order: index });
       });
-      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+      await batch.commit();
+      await fetchMenuAndCategories();
       alert('Order saved successfully!');
     } catch (e) {
       alert(`Error saving order: ${e.message}`);
@@ -244,13 +220,13 @@ export default function AdminMenuPage() {
 
   const saveCategoryOrder = async () => {
     try {
-      // TODO: Replace with Firebase Function URL
-      const response = await fetch('http://127.0.0.1:5001/demo-no-project/us-central1/updateCategoryOrder', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(categories),
+      const batch = writeBatch(db);
+      categories.forEach((category, index) => {
+        const categoryDoc = doc(db, 'categories', category.id);
+        batch.update(categoryDoc, { order: index });
       });
-      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+      await batch.commit();
+      await fetchMenuAndCategories();
       alert('Category order saved successfully!');
     } catch (e) {
       alert(`Error saving category order: ${e.message}`);
@@ -282,7 +258,7 @@ export default function AdminMenuPage() {
           <h2>Productos</h2>
           <div className="table-responsive">
             <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-              <SortableContext items={menu} strategy={verticalListSortingStrategy}>
+              <SortableContext items={menu.map(i => i.id)} strategy={verticalListSortingStrategy}>
                 <table className="table table-striped table-hover">
                   <thead>
                     <tr>
@@ -308,7 +284,7 @@ export default function AdminMenuPage() {
         <div className="col-md-4">
           <h2>Categorías</h2>
           <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleCategoryDragEnd}>
-            <SortableContext items={categories} strategy={verticalListSortingStrategy}>
+            <SortableContext items={categories.map(c => c.id)} strategy={verticalListSortingStrategy}>
               {categories.map(cat => (
                 <SortableCategoryItem key={cat.id} category={cat} />
               ))}

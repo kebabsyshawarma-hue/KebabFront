@@ -86,7 +86,8 @@ export default function CheckoutPage() {
         reference: reference,
         publicKey: import.meta.env.VITE_WOMPI_PUBLIC_KEY,
         signature: { integrity: signature },
-        redirectUrl: `${window.location.origin}/checkout/success`,
+        
+        redirectUrl: `${window.location.origin}/checkout/result`,
         customerData: {
           email: customerDetails.email,
           fullName: customerDetails.name,
@@ -99,8 +100,7 @@ export default function CheckoutPage() {
         const transaction = result.transaction;
         const newStatus = transaction.status === 'APPROVED' ? 'APPROVED' : 'DECLINED';
 
-        console.log('Wompi transaction result:', transaction);
-        console.log(`Attempting to update order ${orderId} with status: ${newStatus}`);
+
 
         if (transaction.status === 'APPROVED') {
           clearCart();

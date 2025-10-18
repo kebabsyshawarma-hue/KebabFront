@@ -1,5 +1,7 @@
-import { useState, useEffect } from 'react';
-// import { HeroSlide } from '../../../types'; // types.js is now empty
+import { useState, useEffect, useRef } from 'react';
+import { db } from '../../firebase';
+import { collection, getDocs, addDoc, doc, updateDoc, deleteDoc } from 'firebase/firestore';
+import { Modal } from 'bootstrap';
 
 export default function HeroAdminPage() {
   const [slides, setSlides] = useState([]);
@@ -10,30 +12,54 @@ export default function HeroAdminPage() {
     title: '',
     subtitle: '',
     image: '',
-    type: 'horizontal', // Default to horizontal
+    type: 'horizontal',
   });
 
   const [editingSlide, setEditingSlide] = useState(null);
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+
+  const addModalRef = useRef(null);
+  const editModalRef = useRef(null);
+
+  const slidesCollectionRef = collection(db, 'heroSlides');
 
   useEffect(() => {
-    async function fetchSlides() {
+    const fetchSlides = async () => {
       try {
-        // TODO: Replace with Firebase Function URL
-        const response = await fetch('http://127.0.0.1:5001/demo-no-project/us-central1/getHeroSlides');
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        const data = await response.json();
-        setSlides(data);
+        const data = await getDocs(slidesCollectionRef);
+        const slidesData = data.docs.map((doc) => ({ ...doc.data(), id: doc.id }));
+        setSlides(slidesData);
       } catch (e) {
         setError(e.message);
       } finally {
         setLoading(false);
       }
-    }
+    };
 
     fetchSlides();
   }, []);
+
+  useEffect(() => {
+    let modalInstance = null;
+    if (isAddModalOpen && addModalRef.current) {
+      modalInstance = new Modal(addModalRef.current);
+      modalInstance.show();
+    }
+    return () => {
+      modalInstance?.hide();
+    };
+  }, [isAddModalOpen]);
+
+  useEffect(() => {
+    let modalInstance = null;
+    if (editingSlide && editModalRef.current) {
+      modalInstance = new Modal(editModalRef.current);
+      modalInstance.show();
+    }
+    return () => {
+      modalInstance?.hide();
+    };
+  }, [editingSlide]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -48,22 +74,10 @@ export default function HeroAdminPage() {
   const handleAddSlide = async (e) => {
     e.preventDefault();
     try {
-      // TODO: Replace with Firebase Function URL
-      const response = await fetch('http://127.0.0.1:5001/demo-no-project/us-central1/addHeroSlide', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(newSlide),
-      });
-
-      if (!response.ok) {
-        throw new Error('Error al agregar el slide');
-      }
-
-      const addedSlide = await response.json();
-      setSlides((prev) => [...prev, addedSlide.slide]);
+      const docRef = await addDoc(slidesCollectionRef, newSlide);
+      setSlides((prev) => [...prev, { ...newSlide, id: docRef.id }]);
       setNewSlide({ title: '', subtitle: '', image: '', type: 'horizontal' });
+      setIsAddModalOpen(false);
     } catch (error) {
       setError(error.message);
     }
@@ -72,17 +86,8 @@ export default function HeroAdminPage() {
   const handleDeleteSlide = async (id) => {
     if (!confirm('¿Estás seguro de que quieres eliminar este producto?')) return;
     try {
-      // TODO: Replace with Firebase Function URL
-      const response = await fetch(`http://127.0.0.1:5001/demo-no-project/us-central1/manageHeroSlide/${id}`,
-        {
-          method: 'DELETE',
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error('Error al eliminar el slide');
-      }
-
+      const slideDoc = doc(db, 'heroSlides', id);
+      await deleteDoc(slideDoc);
       setSlides((prev) => prev.filter((slide) => slide.id !== id));
     } catch (error) {
       setError(error.message);
@@ -94,24 +99,12 @@ export default function HeroAdminPage() {
     if (!editingSlide) return;
 
     try {
-      // TODO: Replace with Firebase Function URL
-      const response = await fetch(`http://127.0.0.1:5001/demo-no-project/us-central1/manageHeroSlide/${editingSlide.id}`,
-        {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(editingSlide),
-        }
-      );
+      const slideDoc = doc(db, 'heroSlides', editingSlide.id);
+      const { id, ...slideData } = editingSlide;
+      await updateDoc(slideDoc, slideData);
 
-      if (!response.ok) {
-        throw new Error('Error al actualizar el slide');
-      }
-
-      const updatedSlide = await response.json();
       setSlides((prev) =>
-        prev.map((slide) => (slide.id === updatedSlide.slide.id ? updatedSlide.slide : slide))
+        prev.map((slide) => (slide.id === editingSlide.id ? editingSlide : slide))
       );
       setEditingSlide(null);
     } catch (error) {
@@ -129,125 +122,153 @@ export default function HeroAdminPage() {
 
   return (
     <div className="container py-5">
-      <h1 className="mb-4">Gestionar Hero Slides</h1>
-
-      <div className="card mb-4">
-        <div className="card-header">Agregar Nuevo Slide</div>
-        <div className="card-body">
-          <form onSubmit={handleAddSlide}>
-            <div className="mb-3">
-              <label htmlFor="title" className="form-label">Título</label>
-              <input
-                type="text"
-                className="form-control"
-                id="title"
-                name="title"
-                value={newSlide.title}
-                onChange={handleInputChange}
-                required
-              />
-            </div>
-            <div className="mb-3">
-              <label htmlFor="subtitle" className="form-label">Subtítulo</label>
-              <input
-                type="text"
-                className="form-control"
-                id="subtitle"
-                name="subtitle"
-                value={newSlide.subtitle}
-                onChange={handleInputChange}
-                required
-              />
-            </div>
-            <div className="mb-3">
-              <label htmlFor="image" className="form-label">URL de la Imagen</label>
-              <input
-                type="text"
-                className="form-control"
-                id="image"
-                name="image"
-                value={newSlide.image}
-                onChange={handleInputChange}
-                required
-              />
-            </div>
-            <div className="mb-3">
-              <label htmlFor="type" className="form-label">Tipo</label>
-              <select
-                className="form-select"
-                id="type"
-                name="type"
-                value={newSlide.type}
-                onChange={handleInputChange}
-                required
-              >
-                <option value="horizontal">Horizontal</option>
-                <option value="vertical">Vertical</option>
-              </select>
-            </div>
-            <button type="submit" className="btn btn-primary">Agregar Slide</button>
-          </form>
-        </div>
+      <div className="d-flex justify-content-between align-items-center mb-4">
+        <h1>Gestionar Hero Slides</h1>
+        <button className="btn btn-primary" onClick={() => setIsAddModalOpen(true)}>
+          Agregar Nuevo Slide
+        </button>
       </div>
 
+      {/* Add Slide Modal */}
+      {isAddModalOpen && (
+        <div className="modal fade show d-block" tabIndex="-1" ref={addModalRef}>
+          <div className="modal-dialog">
+            <div className="modal-content">
+              <div className="modal-header">
+                <h5 className="modal-title">Agregar Nuevo Slide</h5>
+                <button type="button" className="btn-close" onClick={() => setIsAddModalOpen(false)}></button>
+              </div>
+              <div className="modal-body">
+                <form onSubmit={handleAddSlide}>
+                  <div className="mb-3">
+                    <label htmlFor="title" className="form-label">Título</label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      id="title"
+                      name="title"
+                      value={newSlide.title}
+                      onChange={handleInputChange}
+                      required
+                    />
+                  </div>
+                  <div className="mb-3">
+                    <label htmlFor="subtitle" className="form-label">Subtítulo</label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      id="subtitle"
+                      name="subtitle"
+                      value={newSlide.subtitle}
+                      onChange={handleInputChange}
+                      required
+                    />
+                  </div>
+                  <div className="mb-3">
+                    <label htmlFor="image" className="form-label">URL de la Imagen</label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      id="image"
+                      name="image"
+                      value={newSlide.image}
+                      onChange={handleInputChange}
+                      required
+                    />
+                  </div>
+                  <div className="mb-3">
+                    <label htmlFor="type" className="form-label">Tipo</label>
+                    <select
+                      className="form-select"
+                      id="type"
+                      name="type"
+                      value={newSlide.type}
+                      onChange={handleInputChange}
+                      required
+                    >
+                      <option value="horizontal">Horizontal</option>
+                      <option value="vertical">Vertical</option>
+                    </select>
+                  </div>
+                  <div className="modal-footer">
+                    <button type="button" className="btn btn-secondary" onClick={() => setIsAddModalOpen(false)}>Cancelar</button>
+                    <button type="submit" className="btn btn-primary">Agregar Slide</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Slide Modal */}
       {editingSlide && (
-        <div className="card mb-4">
-          <div className="card-header">Editando Slide {editingSlide.id}</div>
-          <div className="card-body">
-            <form onSubmit={handleUpdateSlide}>
-              <div className="mb-3">
-                <label htmlFor="edit-title" className="form-label">Título</label>
-                <input
-                  type="text"
-                  className="form-control"
-                  id="edit-title"
-                  name="title"
-                  value={editingSlide.title}
-                  onChange={handleEditInputChange}
-                  required
-                />
+        <div className="modal fade show d-block" tabIndex="-1" ref={editModalRef}>
+          <div className="modal-dialog">
+            <div className="modal-content">
+              <div className="modal-header">
+                <h5 className="modal-title">Editando Slide {editingSlide.id}</h5>
+                <button type="button" className="btn-close" onClick={() => setEditingSlide(null)}></button>
               </div>
-              <div className="mb-3">
-                <label htmlFor="edit-subtitle" className="form-label">Subtítulo</label>
-                <input
-                  type="text"
-                  className="form-control"
-                  id="edit-subtitle"
-                  name="subtitle"
-                  value={editingSlide.subtitle}
-                  onChange={handleEditInputChange}
-                  required
-                />
+              <div className="modal-body">
+                <form onSubmit={handleUpdateSlide}>
+                  <div className="mb-3">
+                    <label htmlFor="edit-title" className="form-label">Título</label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      id="edit-title"
+                      name="title"
+                      value={editingSlide.title}
+                      onChange={handleEditInputChange}
+                      required
+                    />
+                  </div>
+                  <div className="mb-3">
+                    <label htmlFor="edit-subtitle" className="form-label">Subtítulo</label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      id="edit-subtitle"
+                      name="subtitle"
+                      value={editingSlide.subtitle}
+                      onChange={handleEditInputChange}
+                      required
+                    />
+                  </div>
+                  <div className="mb-3">
+                    <label htmlFor="edit-image" className="form-label">URL de la Imagen</label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      id="edit-image"
+                      name="image"
+                      value={editingSlide.image}
+                      onChange={handleEditInputChange}
+                      required
+                    />
+                  </div>
+                  <div className="mb-3">
+                    <label htmlFor="edit-type" className="form-label">Tipo</label>
+                    <select
+                      className="form-select"
+                      id="edit-type"
+                      name="type"
+                      value={editingSlide.type}
+                      onChange={handleEditInputChange}
+                      required
+                    >
+                      <option value="horizontal">Horizontal</option>
+                      <option value="vertical">Vertical</option>
+                    </select>
+                  </div>
+                  <div className="modal-footer">
+                    <button type="button" className="btn btn-secondary" onClick={() => setEditingSlide(null)}>Cancelar</button>
+                    <button type="submit" className="btn btn-success">Guardar Cambios</button>
+                  </div>
+                </form>
               </div>
-              <div className="mb-3">
-                <label htmlFor="edit-image" className="form-label">URL de la Imagen</label>
-                <input
-                  type="text"
-                  className="form-control"
-                  id="edit-image"
-                  name="image"
-                  value={editingSlide.image}
-                  onChange={handleEditInputChange}
-                  required
-                />
-              </div>
-              <div className="mb-3">
-                <label htmlFor="edit-type" className="form-label">Tipo</label>
-                <select
-                  className="form-select"
-                  id="edit-type"
-                  name="type"
-                  value={editingSlide.type}
-                  onChange={handleEditInputChange}
-                  required
-                >
-                  <option value="horizontal">Horizontal</option>
-                  <option value="vertical">Vertical</option>
-                </select>
-              </div>
-              <button type="submit" className="btn btn-success me-2">Guardar Cambios</button>
-              <button type="button" className="btn btn-secondary" onClick={() => setEditingSlide(null)}>Cancelar</button>
-            </form>
+            </div>
           </div>
         </div>
       )}
@@ -264,7 +285,6 @@ export default function HeroAdminPage() {
                 <div className="card-body">
                   <h5 className="card-title">{slide.title}</h5>
                   <p className="card-text">{slide.subtitle}</p>
-                  {console.log('Slide Image:', slide.image, 'Slide Subtitle:', slide.subtitle)}
                   <p className="card-text"><small className="text-muted">Tipo: {slide.type}</small></p>
                   <button className="btn btn-primary me-2" onClick={() => setEditingSlide(slide)}>Editar</button>
                   <button className="btn btn-danger" onClick={() => handleDeleteSlide(slide.id)}>Eliminar</button>

@@ -13,14 +13,11 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      console.log('onAuthStateChanged user:', user);
       setCurrentUser(user);
       if (user) {
         // Force refresh token to get latest claims
         const idTokenResult = await user.getIdTokenResult(true);
-        console.log('idTokenResult claims:', idTokenResult.claims);
         setIsAdmin(!!idTokenResult.claims.admin);
-        console.log('isAdmin after check:', !!idTokenResult.claims.admin);
       } else {
         setIsAdmin(false);
       }

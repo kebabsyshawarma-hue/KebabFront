@@ -1,22 +1,8 @@
 {
-  "builds": [
-    {
-      "src": "package.json",
-      "use": "@vercel/static-build",
-      "config": { "distDir": "dist" }
-    },
-    {
-      "src": "api/**/*.ts",
-      "use": "@vercel/node"
+  "framework": "vite",
+  "functions": {
+    "api/**/*.ts": {
+      "runtime": "nodejs18.x"
     }
-  ],
-  "rewrites": [
-    { "source": "/api/(.*)", "destination": "/api/$1" }
-  ],
-  "env": {
-    "WOMPI_INTEGRITY_SECRET": "test_integrity_oV3OSIHXcg5AY2DEHJAQaBhxorArNiL7",
-    "FIREBASE_PROJECT_ID": "kebabsyshawarma-9b19b",
-    "FIREBASE_PRIVATE_KEY": "-----BEGIN PRIVATE KEY-----\nYOUR_FIREBASE_PRIVATE_KEY_HERE\n-----END PRIVATE KEY-----",
-    "FIREBASE_CLIENT_EMAIL": "kebabsyshawarma-9b19b@appspot.gserviceaccount.com"
   }
 }

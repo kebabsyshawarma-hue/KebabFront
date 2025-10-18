@@ -4,12 +4,15 @@ service cloud.firestore {
     // Allow public read access for menu and hero slides
     match /menu/{document=**} {
       allow read: if true;
+      allow write: if request.auth.token.admin == true;
     }
     match /categories/{document=**} {
       allow read: if true;
+      allow write: if request.auth.token.admin == true;
     }
     match /heroSlides/{document=**} {
       allow read: if true;
+      allow write: if request.auth.token.admin == true;
     }
 
     // Orders collection rules

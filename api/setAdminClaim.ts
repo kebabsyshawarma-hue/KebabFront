@@ -1,7 +1,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import * as admin from 'firebase-admin';
 import { getAuth } from 'firebase-admin/auth';
-import { db } from '../_lib/firebase.js';
+import { db } from '../_lib/firebase';
 
 export default async (req: VercelRequest, res: VercelResponse) => {
   res.setHeader('Access-Control-Allow-Origin', '*');

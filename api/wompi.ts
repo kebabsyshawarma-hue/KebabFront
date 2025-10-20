@@ -1,6 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import * as crypto from 'crypto';
-import { db } from '../_lib/firebase.js';
+import { db } from './_lib/firebase';
 import { doc, updateDoc } from 'firebase/firestore';
 
 export default async (req: VercelRequest, res: VercelResponse) => {
@@ -35,7 +35,7 @@ export default async (req: VercelRequest, res: VercelResponse) => {
     }
 
     const concatenatedProperties = signature.properties
-      .map(property => {
+      .map((property: string) => {
         const keys = property.split('.'); // e.g., 'transaction.id'
         let value = wompiEvent; // Start from the root of the event
         for (const key of keys) {

@@ -31,8 +31,8 @@ export default function HeroSection({ heroSlides, isMobile, isScrolled }) {
               alignItems: 'flex-end',
               justifyContent: 'center',
               color: 'var(--foreground)',
-              textShadow: '0px 0px 8px rgba(0,0,0,0.9), 0px 0px 8px rgba(0,0,0,0.9)',
-              backgroundColor: 'rgba(0,0,0,0.4)',
+              textShadow: '0px 2px 8px rgba(0,0,0,1), 0px 2px 8px rgba(0,0,0,1)',
+              backgroundColor: 'rgba(0,0,0,0.6)',
             }}>
               <div className="container text-center" style={{ marginBottom: '20px' }}>
                 <h1 className={`display-4 fw-bold mb-3 ${styles.display4}`} style={{ fontFamily: 'var(--font-playfair-display)' }}>{slide.title}</h1>

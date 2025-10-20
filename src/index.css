@@ -10,6 +10,18 @@
   }
 }
 
+.nav-link-gold {
+  color: var(--foreground) !important;
+  font-weight: 500;
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  transition: background-color 0.2s ease-in-out;
+}
+.nav-link-gold:hover {
+  color: var(--foreground) !important;
+  background-color: #A52A2A !important; /* Red background on hover */
+}
+
 html,
 body {
   height: 100%;

@@ -1,6 +1,11 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import * as crypto from 'crypto';
 
+// Ensure the required environment variable is present at build time.
+if (!process.env.WOMPI_INTEGRITY_SECRET) {
+  throw new Error('Missing required environment variable: WOMPI_INTEGRITY_SECRET');
+}
+
 export default async (req: VercelRequest, res: VercelResponse) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
@@ -17,12 +22,12 @@ export default async (req: VercelRequest, res: VercelResponse) => {
   }
 
   try {
-
-
     const { reference, amount } = req.body;
 
     const wompiIntegritySecret = process.env.WOMPI_INTEGRITY_SECRET;
 
+    // This check is now somewhat redundant due to the build-time check above,
+    // but it's good practice for runtime safety.
     if (!wompiIntegritySecret) {
       console.error('WOMPI_INTEGRITY_SECRET is not configured.');
       res.status(500).json({ error: 'Wompi integrity secret is not configured.' });

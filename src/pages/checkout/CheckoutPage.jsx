@@ -1,11 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useCart } from '../../context/CartContext.jsx'; // Adjusted path
-import styles from '../../styles/checkout.module.css'; // Adjusted path
+import { useCart } from '../../context/CartContext.jsx';
+import styles from '../../styles/checkout.module.css';
 import { db } from '../../firebase.js';
-import { addDoc, collection, doc, updateDoc, serverTimestamp } from 'firebase/firestore';
-
-
+import { runTransaction, collection, doc, serverTimestamp } from 'firebase/firestore';
 
 export default function CheckoutPage() {
   const { cart, total, clearCart, decreaseQuantity, increaseQuantity, removeFromCart } = useCart();
@@ -17,12 +15,11 @@ export default function CheckoutPage() {
     address: '',
     phone: '',
   });
-  const [paymentMethod, setPaymentMethod] = useState('cash'); // 'cash', 'transfer', or 'wompi'
+  const [paymentMethod, setPaymentMethod] = useState('cash');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    // Remove any lingering Bootstrap modal backdrops
     const backdrops = document.querySelectorAll('.modal-backdrop, .offcanvas-backdrop');
     backdrops.forEach(backdrop => backdrop.remove());
 
@@ -33,13 +30,13 @@ export default function CheckoutPage() {
 
     return () => {
       document.body.removeChild(script);
-      document.body.style.overflow = 'auto'; // Ensure body overflow is reset
+      document.body.style.overflow = 'auto';
     };
   }, []);
 
   useEffect(() => {
     if (cart.length === 0 && !isSubmitting) {
-      navigate('/'); // Redirect to home if cart is empty and not submitting
+      navigate('/');
     }
   }, [cart, isSubmitting, navigate]);
 
@@ -55,7 +52,7 @@ export default function CheckoutPage() {
     setPaymentMethod(e.target.value);
   };
 
-  const handleWompiPayment = async (orderId) => { // Changed orderId type to string
+  const handleWompiPayment = async (orderId) => {
     if (typeof window.WidgetCheckout === 'undefined') {
       setError('El widget de Wompi no se ha cargado correctamente. Por favor, recarga la página.');
       setIsSubmitting(false);
@@ -66,9 +63,7 @@ export default function CheckoutPage() {
       const reference = `kebab_${orderId}`;
       const response = await fetch('/api/getWompiSignature', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ reference, amount: total }),
       });
 
@@ -86,7 +81,6 @@ export default function CheckoutPage() {
         reference: reference,
         publicKey: import.meta.env.VITE_WOMPI_PUBLIC_KEY,
         signature: { integrity: signature },
-        
         redirectUrl: `${window.location.origin}/checkout/result`,
         customerData: {
           email: customerDetails.email,
@@ -96,13 +90,8 @@ export default function CheckoutPage() {
         },
       });
 
-      checkout.open(async function (result) {
-        const transaction = result.transaction;
-        const newStatus = transaction.status === 'APPROVED' ? 'APPROVED' : 'DECLINED';
-
-
-
-        if (transaction.status === 'APPROVED') {
+      checkout.open(function (result) {
+        if (result.transaction.status === 'APPROVED') {
           clearCart();
           navigate('/checkout/success');
         } else {
@@ -135,31 +124,51 @@ export default function CheckoutPage() {
     }
 
     try {
-      const order = {
-        customerDetails,
-        items: cart,
-        total,
-        paymentMethod,
-        status: paymentMethod === 'wompi' ? 'Pending' : 'Pending',
-        createdAt: serverTimestamp(),
-      };
+      // Run a transaction to get the next order ID and create the order
+      const newOrderRef = await runTransaction(db, async (transaction) => {
+        const counterRef = doc(db, 'counters', 'orders');
+        const counterDoc = await transaction.get(counterRef);
 
-      const docRef = await addDoc(collection(db, 'orders'), order);
+        if (!counterDoc.exists()) {
+          throw new Error("Counter document does not exist!");
+        }
+
+        const newId = counterDoc.data().lastId + 1;
+        transaction.update(counterRef, { lastId: newId });
+
+        const orderPayload = {
+          shortOrderId: newId.toString(),
+          customerDetails,
+          items: cart,
+          total,
+          paymentMethod,
+          status: 'Pending',
+          fulfillmentStatus: 'Pedido recibido',
+          createdAt: serverTimestamp(),
+        };
+
+        // Create the new order document with a generated ID
+        const newOrderDocRef = doc(collection(db, "orders"));
+        transaction.set(newOrderDocRef, orderPayload);
+        return newOrderDocRef;
+      });
+
+      console.log("Order created successfully with ID: ", newOrderRef.id);
 
       if (paymentMethod === 'wompi') {
-        await handleWompiPayment(docRef.id);
+        await handleWompiPayment(newOrderRef.id);
         return;
       }
 
-      clearCart(); // Clear cart after successful order
-      navigate('/checkout/success'); // Redirect to success page
+      clearCart();
+      navigate('/checkout/success');
 
     } catch (err) {
+      console.error("Transaction failed: ", err);
       setError(err.message || 'Ocurrió un error al realizar el pedido.');
       setIsSubmitting(false);
     }
   };
-
 
   return (
     <>
@@ -172,7 +181,6 @@ export default function CheckoutPage() {
         {error && <div className="alert alert-danger py-2" role="alert">{error}</div>}
 
         <div className="row g-3">
-          {/* Columna Izquierda: Formulario de Contacto */}
           <div className="col-md-6">
             <h2 className={`mb-3 ${styles.checkoutH2}`} style={{ fontFamily: 'var(--font-playfair-display)' }}>Tus Datos</h2>
             <form onSubmit={handleSubmit}>
@@ -223,7 +231,7 @@ export default function CheckoutPage() {
                   placeholder="Dirección de Envío"
                   value={customerDetails.address}
                   onChange={handleChange}
-                  rows={2} // Reduced rows
+                  rows={2}
                   required
                   style={{ height: 'auto' }}
                 ></textarea>
@@ -271,7 +279,7 @@ export default function CheckoutPage() {
                     onChange={handlePaymentChange}
                   />
                   <label className="form-check-label" htmlFor="paymentWompi">
-                    Wompi
+                    Pagar con Tarjeta o PSE
                   </label>
                 </div>
               </div>
@@ -282,7 +290,6 @@ export default function CheckoutPage() {
             </form>
           </div>
 
-          {/* Columna Derecha: Resumen del Pedido */}
           <div className={`col-md-6 ${styles.orderSummary}`}>
             <h2 className={`mb-3 ${styles.checkoutH2}`} style={{ fontFamily: 'var(--font-playfair-display)' }}>Tu Pedido</h2>
             {cart.length === 0 ? (

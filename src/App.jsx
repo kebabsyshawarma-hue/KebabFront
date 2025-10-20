@@ -4,6 +4,7 @@ import CheckoutPage from './pages/checkout/CheckoutPage.jsx';
 import RejectedPage from './pages/checkout/RejectedPage.jsx';
 import SuccessPage from './pages/checkout/SuccessPage.jsx';
 import ResultPage from './pages/checkout/ResultPage.jsx'; // Import ResultPage
+import OrderStatusPage from './pages/status/OrderStatusPage.jsx'; // Import OrderStatusPage
 import AdminLayout from './pages/admin/AdminLayout.jsx';
 import AdminDashboard from './pages/admin/AdminDashboard.jsx';
 import HeroAdminPage from './pages/admin/HeroAdminPage.jsx';
@@ -21,6 +22,7 @@ function App() {
         <Route path="/checkout/rejected" element={<RejectedPage />} />
         <Route path="/checkout/success" element={<SuccessPage />} />
         <Route path="/checkout/result" element={<ResultPage />} /> {/* Add ResultPage route */}
+        <Route path="/status" element={<OrderStatusPage />} /> {/* Add OrderStatusPage route */}
         <Route path="/admin/login" element={<LoginPage />} />
         <Route path="/admin" element={<ProtectedRoute adminOnly={true} />}>
           <Route element={<AdminLayout />}>

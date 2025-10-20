@@ -3,8 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { useState, useEffect, useRef } from 'react';
 import styles from '../styles/menu.module.css';
 import menuSectionStyles from '../styles/menu-section.module.css';
-// import { Product, Category, MenuData, HeroSlide } from '../types'; // types.js is now empty
-
 import Navbar from '../components/Navbar.jsx';
 import HeroSection from '../components/HeroSection.jsx';
 import CategoryNav from '../components/CategoryNav.jsx';
@@ -12,6 +10,7 @@ import MenuSection from '../components/MenuSection.jsx';
 import ContactAndFooter from '../components/ContactAndFooter.jsx';
 import CartOffcanvas from '../components/CartOffcanvas.jsx';
 import SocialWidgets from '../components/SocialWidgets.jsx';
+import MenuModal from '../components/MenuModal.jsx'; // Import the modal
 import { db } from '../firebase';
 import { collection, getDocs } from 'firebase/firestore';
 
@@ -22,6 +21,7 @@ export default function HomePage() {
   const [error, setError] = useState(null);
   const [isMobile, setIsMobile] = useState(false);
   const [heroSlides, setHeroSlides] = useState([]);
+  const [selectedItem, setSelectedItem] = useState(null); // State for the modal
 
   const { cart, addToCart, increaseQuantity, decreaseQuantity, removeFromCart, total } = useCart();
   const navigate = useNavigate();
@@ -209,6 +209,11 @@ export default function HomePage() {
     handleScrollTo(menuElement);
   };
 
+  const handleContactClick = () => {
+    const contactElement = document.getElementById('contact');
+    handleScrollTo(contactElement);
+  };
+
   const handleCategoryClick = (slug) => {
     const element = categoryRefs.current[slug];
     handleScrollTo(element);
@@ -216,10 +221,6 @@ export default function HomePage() {
 
   const handleProceedToCheckout = () => {
     navigate('/checkout');
-  };
-
-  const calculateTotal = () => {
-    return cart.reduce((total, item) => total + (item.price * item.quantity), 0);
   };
 
   const categoryNavStyles = isMenuFixed 
@@ -247,7 +248,7 @@ export default function HomePage() {
   return (
     <>
       <div style={{ backgroundColor: '#f8f9fa' }}>
-        <Navbar ref={navbarRef} totalItems={totalItems} navbarBackground={navbarBackground} onMenuClick={handleMenuButtonClick} />
+        <Navbar ref={navbarRef} totalItems={totalItems} navbarBackground={navbarBackground} onMenuClick={handleMenuButtonClick} onContactClick={handleContactClick} />
         <HeroSection heroSlides={heroSlides} isMobile={isMobile} isScrolled={isScrolled} />
         <CategoryNav categories={menu.categories} activeCategory={activeCategory} onCategoryClick={handleCategoryClick} isMenuFixed={isMenuFixed} navbarHeight={navbarRef.current?.offsetHeight || 80} categoryNavStyles={categoryNavStyles} />
         <main id="menu" className={`${menuSectionStyles.menuSection} ${isScrolled ? menuSectionStyles.visible : ''}`}>
@@ -255,13 +256,18 @@ export default function HomePage() {
             {isMenuFixed && (
               <div style={{ height: `${placeholderHeight}px` }} />
             )}
-            <MenuSection menu={menu} categoryRefs={categoryRefs} addToCart={addToCart} />
+            <MenuSection menu={menu} categoryRefs={categoryRefs} onSelectItem={setSelectedItem} />
           </div>
         </main>
         <ContactAndFooter />
       </div>
       <CartOffcanvas handleProceedToCheckout={handleProceedToCheckout} />
       <SocialWidgets />
+
+      {/* Render the modal at the top level */}
+      {selectedItem && (
+        <MenuModal item={selectedItem} onClose={() => setSelectedItem(null)} />
+      )}
     </>
   );
 }

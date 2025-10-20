@@ -72,7 +72,7 @@ export default async (req: VercelRequest, res: VercelResponse) => {
     if (eventType === 'transaction.updated' && transaction) {
       console.log('Processing transaction.updated event.');
       const orderId = transaction.reference?.split('kebab_')[1];
-      const newStatus = transaction.status === 'APPROVED' ? 'Approved' : 'Declined';
+      const newStatus = transaction.status === 'APPROVED' ? 'Paid' : 'Declined';
 
       console.log(`Transaction reference: ${transaction.reference}`);
       console.log(`Extracted orderId: ${orderId}`);

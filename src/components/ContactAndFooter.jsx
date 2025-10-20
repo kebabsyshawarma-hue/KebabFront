@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import styles from './ContactAndFooter.module.css';
 
 export default function ContactAndFooter() {
@@ -10,8 +11,8 @@ export default function ContactAndFooter() {
             <div className="col-md-6 mb-4 mb-md-0">
               <div className="ratio ratio-16x9">
                 <iframe
-                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d15677.67165948842!2d-75.553954!3d10.423183!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x8ef62f7a3b27a1b7%3A0x1341e4384574388e!2sCentro%2C%2o2C%20Cartagena%2C%20Bol%C3%ADvar!5e0!3m2!1ses!2sco!4v1678886875641!5m2!1ses!2sco"
-                  title="Ubicación de Kebab Cartagena"
+                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d7848.209822191761!2d-75.54225763448196!3d10.413241896246179!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x8ef62f706f79aabd%3A0xb8b79d80dd00aa4d!2sKebab%20y%20Shawarma!5e0!3m2!1sen!2sco!4v1760994571888!5m2!1sen!2sco"
+                  title="Ubicación de Kebab y Shawarma"
                   allowFullScreen
                   loading="lazy"
                   referrerPolicy="no-referrer-when-downgrade"
@@ -35,7 +36,13 @@ export default function ContactAndFooter() {
       </section>
       <footer className="py-4 bg-black text-white text-center">
         <div className="container">
-          <p className={`mb-0 ${styles.footerText}`}>&copy; 2025 Kebab Cartagena. Todos los derechos reservados. <span className={`text-white-50 ${styles.footerMx2}`}>|</span> <span className="text-white-50">Powered by </span><a href="https://limitlesscol.com" target="_blank" rel="noopener noreferrer" className="text-white" style={{ textDecoration: 'none' }}><strong>Limitless Solutions</strong></a></p>
+          <p className={`mb-0 ${styles.footerText}`}>
+            &copy; 2025 Kebab Cartagena. Todos los derechos reservados.
+            <span className={`text-white-50 ${styles.footerMx2}`}>|</span>
+            <Link to="/status" className="text-white" style={{ textDecoration: 'none' }}>Estado de la Orden</Link>
+            <span className={`text-white-50 ${styles.footerMx2}`}>|</span>
+            <span className="text-white-50">Powered by </span><a href="https://limitlesscol.com" target="_blank" rel="noopener noreferrer" className="text-white" style={{ textDecoration: 'none' }}><strong>Limitless Solutions</strong></a>
+          </p>
         </div>
       </footer>
     </>

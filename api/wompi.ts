@@ -1,7 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import * as crypto from 'crypto';
 import { db } from './_lib/firebase';
-import { doc, updateDoc } from 'firebase/firestore';
 
 export default async (req: VercelRequest, res: VercelResponse) => {
   console.log('--- Wompi Webhook Received ---');
@@ -80,9 +79,9 @@ export default async (req: VercelRequest, res: VercelResponse) => {
       console.log(`New status: ${newStatus}`);
 
       if (orderId) {
-        const orderRef = doc(db, 'orders', orderId);
+        const orderRef = db.collection('orders').doc(orderId);
         console.log(`Attempting to update order ${orderId} in Firestore...`);
-        await updateDoc(orderRef, { status: newStatus, wompiTransactionId: transaction.id });
+        await orderRef.update({ status: newStatus, wompiTransactionId: transaction.id });
         console.log(`SUCCESS: Order ${orderId} status updated to ${newStatus}.`);
         return res.status(200).json({ message: 'Order status updated successfully.' });
       } else {

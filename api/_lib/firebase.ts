@@ -7,11 +7,16 @@ type ServiceAccountConfig = admin.ServiceAccount & { project_id: string };
 function normalizePrivateKey(rawKey: string): string {
   if (!rawKey) return '';
   
+  console.log(`[Debug] Raw Key Length: ${rawKey.length}`);
+  console.log(`[Debug] Raw Key Start: ${rawKey.substring(0, 20)}...`);
+  console.log(`[Debug] Raw Key End: ...${rawKey.substring(rawKey.length - 20)}`);
+
   // 1. Remove wrapping quotes and standard clean
   let key = rawKey.replace(/^"|"$/g, '');
 
   // 2. Check if it handles literal escaped newlines (common in JSON/Env)
   if (key.includes('\\n')) {
+    console.log('[Debug] Replacing escaped newlines');
     key = key.replace(/\\n/g, '\n');
   }
 

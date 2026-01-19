@@ -1,0 +1,64 @@
+.checkoutContainer {
+  background-color: #1a1a1a;
+  color: white;
+  padding: 2rem;
+}
+
+.checkoutH1, .checkoutH2 {
+  color: #ffcc00;
+  margin-bottom: 1rem !important;
+}
+
+.formControl {
+  background-color: white !important;
+  color: black !important;
+  border: 1px solid #444 !important;
+}
+
+.formControl:focus {
+  background-color: white !important;
+  color: black !important;
+  border-color: #ffcc00 !important;
+  box-shadow: 0 0 0 0.25rem rgba(255, 204, 0, 0.25) !important;
+}
+
+.formFloating > label {
+  color: black !important;
+}
+
+.orderSummary {
+  background-color: #222;
+  padding: 1.5rem;
+  border-radius: 10px;
+}
+
+.checkoutListItem {
+  background-color: #333 !important;
+  color: white !important;
+  border-color: #444 !important;
+}
+
+/* Checkout Page Responsiveness */
+@media (max-width: 768px) {
+  .checkoutContainer {
+    padding: 1rem !important;
+  }
+  .checkoutH1 {
+    font-size: 2rem;
+  }
+  .checkoutH2 {
+    font-size: 1.5rem;
+  }
+}
+
+.formControl::placeholder {
+  color: #ccc !important; /* A lighter gray */
+}
+
+.itemNameCheckout {
+  color: #ffcc00 !important;
+}
+
+.itemDescriptionCheckout {
+  color: white !important;
+}

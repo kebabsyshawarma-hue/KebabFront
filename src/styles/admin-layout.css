@@ -1,0 +1,82 @@
+/* Estilo general del layout de admin */
+.admin-layout {
+  display: flex;
+  min-height: 100vh;
+  background-color: #121212; /* Dark Theme Background */
+  font-family: 'Inter', sans-serif;
+}
+
+/* Barra lateral de navegación */
+.admin-sidebar {
+  width: 260px;
+  background-color: #000000; /* Pure black sidebar */
+  border-right: 1px solid #333;
+  color: #ffffff;
+  padding: 2rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+}
+
+.admin-sidebar h2 {
+  font-size: 1.5rem;
+  text-align: center;
+  margin-bottom: 3rem;
+  color: #FFD700; /* Gold */
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  border-bottom: 1px solid #333;
+  padding-bottom: 1rem;
+}
+
+.nav.flex-column {
+  gap: 0.5rem;
+}
+
+.nav-link {
+  display: block;
+  padding: 1rem 1.5rem;
+  color: #A0A0A0;
+  text-decoration: none;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+  font-size: 0.95rem;
+  font-weight: 500;
+  border-left: 3px solid transparent;
+}
+
+.nav-link:hover, .nav-link.active {
+  background-color: #1E1E1E;
+  color: #FFD700;
+  border-left: 3px solid #FFD700;
+}
+
+/* Close Session Button styling specific to ADMIN SIDEBAR only */
+.admin-sidebar button.nav-link {
+  background: none;
+  border: none;
+  width: 100%;
+  text-align: left;
+  margin-top: auto; /* Push to bottom if container is flex col */
+  color: #FF4444 !important; /* Red for logout */
+  border-left: 3px solid transparent !important;
+}
+.admin-sidebar button.nav-link:hover {
+  background-color: rgba(255, 68, 68, 0.1) !important;
+  border-left: 3px solid #FF4444 !important;
+}
+
+
+/* Contenido principal que se muestra a la derecha */
+.admin-main {
+  flex: 1;
+  width: 100%; /* Ensure it takes full remaining width */
+  overflow-x: hidden;
+}
+
+/* Hide social widgets in admin panel globally via class */
+.hide-social-widgets .social-widgets-container {
+    display: none !important;
+}

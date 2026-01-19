@@ -1,0 +1,47 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper function to check for admin privileges
+    function isAdmin() {
+      return request.auth != null && (request.auth.token.admin == true || request.auth.token.email == 'admin@admin.com');
+    }
+
+    // Allow public read access for menu and hero slides
+    match /menu/{document=**} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+    match /categories/{document=**} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+    match /heroSlides/{document=**} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Rules for the public order ID counter
+    match /counters/orders {
+      // Allow public read access to the counter.
+      allow read: if true;
+      // Allow writes only if the user is incrementing the 'lastId' field by exactly 1.
+      allow write: if request.resource.data.lastId == resource.data.lastId + 1;
+    }
+
+    // Orders collection rules
+    match /orders/{orderId} {
+      // Admins can read all orders.
+      allow read: if isAdmin();
+      
+      // Allow anyone to create an order. 
+      allow create: if true;
+
+      // Only admins can update orders (e.g., status).
+      allow update: if isAdmin();
+      
+      // No one can delete orders
+      allow delete: if false;
+    }
+  }
+}

@@ -1,0 +1,310 @@
+[
+  {
+    "customerInfo": {
+      "name": "prueba",
+      "phone": "123456789",
+      "address": "khggiygi",
+      "notes": ""
+    },
+    "orderItems": [
+      {
+        "id": 1,
+        "name": "Kebab Clásico de Res",
+        "description": "Deliciosa carne de res marinada, cocinada a la perfección en nuestro trompo, servida en pan de pita fresco con lechuga, tomate y nuestra salsa de ajo especial.",
+        "price": 18000,
+        "category": "Kebabs",
+        "image": "/images/kebab_res.jpg",
+        "quantity": 4
+      }
+    ],
+    "total": 72000,
+    "orderDate": "2025-08-18T13:47:18.484Z",
+    "status": "Pendiente",
+    "id": 1
+  },
+  {
+    "id": 2,
+    "customerInfo": {
+      "name": "Carlos Mena",
+      "address": "Cra 21a #19-130",
+      "phone": "3006724343"
+    },
+    "orderItems": [
+      {
+        "id": "nJCQVsKkb88LqiqRkZq4",
+        "kcal": 593,
+        "description": "Tomate, Cebolla, Lechuga, Pepino, Pimenton y Salsa de Ajo de la Casa",
+        "price": 24000,
+        "name": "Kebab de Carne",
+        "category": "Kebabs",
+        "image": "https://res.cloudinary.com/duzoveyjo/image/upload/v1758550523/KEBAB_Y_SHAWARMA_-_RECREO-37_slhyom.jpg",
+        "order": 0,
+        "quantity": 1
+      }
+    ],
+    "total": 24000,
+    "paymentMethod": "wompi",
+    "status": "Pending",
+    "orderDate": "2025-09-29T16:50:19.591Z"
+  },
+  {
+    "id": 3,
+    "customerInfo": {
+      "name": "Carlos Mena",
+      "address": "Cra 21a #19-130",
+      "phone": "3006724343"
+    },
+    "orderItems": [
+      {
+        "id": "nJCQVsKkb88LqiqRkZq4",
+        "description": "Tomate, Cebolla, Lechuga, Pepino, Pimenton y Salsa de Ajo de la Casa",
+        "kcal": 593,
+        "category": "Kebabs",
+        "order": 0,
+        "price": 24000,
+        "image": "https://res.cloudinary.com/duzoveyjo/image/upload/v1758550523/KEBAB_Y_SHAWARMA_-_RECREO-37_slhyom.jpg",
+        "name": "Kebab de Carne",
+        "quantity": 1
+      }
+    ],
+    "total": 24000,
+    "paymentMethod": "wompi",
+    "status": "Pending",
+    "orderDate": "2025-09-29T16:53:30.437Z"
+  },
+  {
+    "id": 4,
+    "customerInfo": {
+      "name": "Carlos Mena",
+      "address": "Cra 21a #19-130",
+      "phone": "3006724343"
+    },
+    "orderItems": [
+      {
+        "id": "nJCQVsKkb88LqiqRkZq4",
+        "description": "Tomate, Cebolla, Lechuga, Pepino, Pimenton y Salsa de Ajo de la Casa",
+        "kcal": 593,
+        "category": "Kebabs",
+        "order": 0,
+        "price": 24000,
+        "image": "https://res.cloudinary.com/duzoveyjo/image/upload/v1758550523/KEBAB_Y_SHAWARMA_-_RECREO-37_slhyom.jpg",
+        "name": "Kebab de Carne",
+        "quantity": 1
+      }
+    ],
+    "total": 24000,
+    "paymentMethod": "wompi",
+    "status": "Pending",
+    "orderDate": "2025-09-29T16:54:38.981Z"
+  },
+  {
+    "id": 5,
+    "customerInfo": {
+      "name": "Carlos Mena",
+      "address": "Cra 21a #19-130",
+      "phone": "3006724343"
+    },
+    "orderItems": [
+      {
+        "id": "beY7T9qXepnyTWHfBIsA",
+        "kcal": 347,
+        "price": 24000,
+        "image": "https://res.cloudinary.com/duzoveyjo/image/upload/v1758550529/KEBAB_Y_SHAWARMA_-_RECREO-35_cm2mwd.jpg",
+        "category": "Kebabs",
+        "order": 1,
+        "description": "Tomate, Cebolla, Lechuga, Pepino, Pimentón y Salsa de Ajo de la Casa",
+        "name": "Kebab de Pollo",
+        "quantity": 1
+      }
+    ],
+    "total": 24000,
+    "paymentMethod": "wompi",
+    "status": "Pending",
+    "orderDate": "2025-09-29T16:58:16.071Z"
+  },
+  {
+    "total": 66000,
+    "paymentMethod": "wompi",
+    "status": "Pending",
+    "orderDate": "2025-09-29T21:28:52.620Z",
+    "customerInfo": {
+      "name": "Carlos Mena",
+      "email": "cmenavega@hotmail.com",
+      "address": "Cra 21a #19-130",
+      "phone": "3006724343"
+    },
+    "orderItems": [
+      {
+        "id": "4PppEuKxTFBmLiEJQ8e2",
+        "price": 29000,
+        "order": 9,
+        "name": "Burger Tradicional",
+        "description": "180g de Carne, Queso Cheddar, Vegetales Frescos, Mostaneza de la Casa, Tocineta y Pepinollos, Acompañados con Papas a la Francesa",
+        "image": "https://res.cloudinary.com/duzoveyjo/image/upload/v1758550524/KEBAB_Y_SHAWARMA_-_RECREO-21_qbariv.jpg",
+        "kcal": 1130,
+        "category": "Burger",
+        "quantity": 1
+      },
+      {
+        "id": "H9tXoG2vTE3XeL8vbklW",
+        "order": 8,
+        "description": "Pan Pita Arabe semitostado, Relleno de Carne y Pollo, Tabbule y Salsa de Ajo de la Casa",
+        "kcal": 383,
+        "name": "Shawarma Mixto",
+        "category": "Shawarmas",
+        "image": "https://res.cloudinary.com/duzoveyjo/image/upload/v1758550517/KEBAB_Y_SHAWARMA_-_RECREO-41_pcvf85.jpg",
+        "price": 37000,
+        "quantity": 1
+      }
+    ],
+    "id": 6
+  },
+  {
+    "total": 48000,
+    "paymentMethod": "wompi",
+    "status": "Pending",
+    "orderDate": "2025-09-29T21:32:48.934Z",
+    "customerInfo": {
+      "name": "Carlos Mena",
+      "email": "cmenavega@hotmail.com",
+      "address": "Cra 21a #19-130",
+      "phone": "3006724343"
+    },
+    "orderItems": [
+      {
+        "id": "beY7T9qXepnyTWHfBIsA",
+        "price": 24000,
+        "category": "Kebabs",
+        "name": "Kebab de Pollo",
+        "description": "Tomate, Cebolla, Lechuga, Pepino, Pimentón y Salsa de Ajo de la Casa",
+        "kcal": 347,
+        "order": 1,
+        "image": "https://res.cloudinary.com/duzoveyjo/image/upload/v1758550529/KEBAB_Y_SHAWARMA_-_RECREO-35_cm2mwd.jpg",
+        "quantity": 1
+      },
+      {
+        "id": "UM8cF2Mq14KbTthrwEQI",
+        "kcal": 390,
+        "image": "https://res.cloudinary.com/duzoveyjo/image/upload/v1758550525/KEBAB_Y_SHAWARMA_-_RECREO-39_d0yyfy.jpg",
+        "name": "Shawarma de Carne",
+        "order": 6,
+        "price": 24000,
+        "category": "Shawarmas",
+        "description": "Pan Pita Arabe semitostado, Relleno de carne, Tabbule y Salsa de Ajo de la Casa",
+        "quantity": 1
+      }
+    ],
+    "id": 7
+  },
+  {
+    "total": 48000,
+    "paymentMethod": "wompi",
+    "status": "Pending",
+    "orderDate": "2025-09-29T21:34:01.215Z",
+    "customerInfo": {
+      "name": "Carlos Mena",
+      "email": "cmenavega@hotmail.com",
+      "address": "Cra 21a #19-130",
+      "phone": "3006724343"
+    },
+    "orderItems": [
+      {
+        "id": "beY7T9qXepnyTWHfBIsA",
+        "price": 24000,
+        "category": "Kebabs",
+        "name": "Kebab de Pollo",
+        "description": "Tomate, Cebolla, Lechuga, Pepino, Pimentón y Salsa de Ajo de la Casa",
+        "kcal": 347,
+        "order": 1,
+        "image": "https://res.cloudinary.com/duzoveyjo/image/upload/v1758550529/KEBAB_Y_SHAWARMA_-_RECREO-35_cm2mwd.jpg",
+        "quantity": 1
+      },
+      {
+        "id": "UM8cF2Mq14KbTthrwEQI",
+        "kcal": 390,
+        "image": "https://res.cloudinary.com/duzoveyjo/image/upload/v1758550525/KEBAB_Y_SHAWARMA_-_RECREO-39_d0yyfy.jpg",
+        "name": "Shawarma de Carne",
+        "order": 6,
+        "price": 24000,
+        "category": "Shawarmas",
+        "description": "Pan Pita Arabe semitostado, Relleno de carne, Tabbule y Salsa de Ajo de la Casa",
+        "quantity": 1
+      }
+    ],
+    "id": 8
+  },
+  {
+    "total": 48000,
+    "paymentMethod": "wompi",
+    "status": "Pending",
+    "orderDate": "2025-09-29T21:41:19.646Z",
+    "customerInfo": {
+      "name": "Carlos Mena",
+      "email": "cmenavega@hotmail.com",
+      "address": "Cra 21a #19-130",
+      "phone": "3006724343"
+    },
+    "orderItems": [
+      {
+        "id": "beY7T9qXepnyTWHfBIsA",
+        "order": 1,
+        "price": 24000,
+        "category": "Kebabs",
+        "description": "Tomate, Cebolla, Lechuga, Pepino, Pimentón y Salsa de Ajo de la Casa",
+        "image": "https://res.cloudinary.com/duzoveyjo/image/upload/v1758550529/KEBAB_Y_SHAWARMA_-_RECREO-35_cm2mwd.jpg",
+        "name": "Kebab de Pollo",
+        "kcal": 347,
+        "quantity": 1
+      },
+      {
+        "id": "UM8cF2Mq14KbTthrwEQI",
+        "price": 24000,
+        "category": "Shawarmas",
+        "order": 6,
+        "description": "Pan Pita Arabe semitostado, Relleno de carne, Tabbule y Salsa de Ajo de la Casa",
+        "kcal": 390,
+        "name": "Shawarma de Carne",
+        "image": "https://res.cloudinary.com/duzoveyjo/image/upload/v1758550525/KEBAB_Y_SHAWARMA_-_RECREO-39_d0yyfy.jpg",
+        "quantity": 1
+      }
+    ],
+    "id": 9
+  },
+  {
+    "total": 48000,
+    "paymentMethod": "wompi",
+    "status": "Pending",
+    "orderDate": "2025-09-29T21:44:47.226Z",
+    "customerInfo": {
+      "name": "Carlos Mena",
+      "email": "cmenavega@hotmail.com",
+      "address": "Cra 21a #19-130",
+      "phone": "3006724343"
+    },
+    "orderItems": [
+      {
+        "id": "beY7T9qXepnyTWHfBIsA",
+        "order": 1,
+        "price": 24000,
+        "category": "Kebabs",
+        "description": "Tomate, Cebolla, Lechuga, Pepino, Pimentón y Salsa de Ajo de la Casa",
+        "image": "https://res.cloudinary.com/duzoveyjo/image/upload/v1758550529/KEBAB_Y_SHAWARMA_-_RECREO-35_cm2mwd.jpg",
+        "name": "Kebab de Pollo",
+        "kcal": 347,
+        "quantity": 1
+      },
+      {
+        "id": "UM8cF2Mq14KbTthrwEQI",
+        "price": 24000,
+        "category": "Shawarmas",
+        "order": 6,
+        "description": "Pan Pita Arabe semitostado, Relleno de carne, Tabbule y Salsa de Ajo de la Casa",
+        "kcal": 390,
+        "name": "Shawarma de Carne",
+        "image": "https://res.cloudinary.com/duzoveyjo/image/upload/v1758550525/KEBAB_Y_SHAWARMA_-_RECREO-39_d0yyfy.jpg",
+        "quantity": 1
+      }
+    ],
+    "id": 10
+  }
+]

@@ -15,15 +15,7 @@ function normalizePrivateKey(rawKey: string): string {
     key = key.replace(/\\n/g, '\n');
   }
 
-  // 3. Robust reconstruction:
-  // Extract the base64 body by removing headers and all whitespace
-  const body = key
-    .replace(/-----BEGIN PRIVATE KEY-----/g, '')
-    .replace(/-----END PRIVATE KEY-----/g, '')
-    .replace(/\s/g, ''); // Remove all newlines, spaces, tabs
-
-  // 4. Rebuild cleanly
-  return `-----BEGIN PRIVATE KEY-----\n${body}\n-----END PRIVATE KEY-----`;
+  return key;
 }
 function buildCredential(): admin.credential.Credential {
   const {

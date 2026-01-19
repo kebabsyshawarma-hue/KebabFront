@@ -4,7 +4,7 @@ service cloud.firestore {
     
     // Helper function to check for admin privileges
     function isAdmin() {
-      return request.auth != null && (request.auth.token.admin == true || request.auth.token.email == 'admin@admin.com');
+      return request.auth != null && (request.auth.token.admin == true || request.auth.token.email == 'admin@admin.com' || request.auth.token.email == 'admin@kebabyshawarma.com');
     }
 
     // Allow public read access for menu and hero slides

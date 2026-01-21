@@ -10,15 +10,12 @@ function normalizePrivateKey(rawKey: string): string {
   
   let key = rawKey.trim(); // Trim whitespace first
   
-  // 1. Remove wrapping quotes (single or double)
-  // Check double quotes
-  if (key.startsWith('"') && key.endsWith('"')) {
-    console.log('[Firebase Debug] Removing wrapping double quotes');
-    key = key.slice(1, -1);
-  }
-  // Check single quotes
-  if (key.startsWith("'") && key.endsWith("'")) {
-    console.log('[Firebase Debug] Removing wrapping single quotes');
+  // 1. Recursively Remove wrapping quotes (single or double)
+  while (
+    (key.startsWith('"') && key.endsWith('"')) || 
+    (key.startsWith("'") && key.endsWith("'"))
+  ) {
+    console.log('[Firebase Debug] Removing wrapping quotes');
     key = key.slice(1, -1);
   }
 
@@ -28,7 +25,17 @@ function normalizePrivateKey(rawKey: string): string {
     key = key.replace(/\\n/g, '\n');
   }
 
-  // 3. Aggressive Repair: Check if Headers are missing or malformed
+  // 3. Fix Common Header Typos (e.g. "PRIVATEKEY" missing space)
+  if (key.includes('-----BEGIN PRIVATEKEY-----')) {
+    console.log('[Firebase Debug] Fixing malformed header (PRIVATEKEY -> PRIVATE KEY)');
+    key = key.replace('-----BEGIN PRIVATEKEY-----', '-----BEGIN PRIVATE KEY-----');
+  }
+  if (key.includes('-----END PRIVATEKEY-----')) {
+    console.log('[Firebase Debug] Fixing malformed footer (PRIVATEKEY -> PRIVATE KEY)');
+    key = key.replace('-----END PRIVATEKEY-----', '-----END PRIVATE KEY-----');
+  }
+
+  // 4. Aggressive Repair: Check if Headers are missing or malformed
   const beginTag = '-----BEGIN PRIVATE KEY-----';
   const endTag = '-----END PRIVATE KEY-----';
 

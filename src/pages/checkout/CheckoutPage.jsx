@@ -46,6 +46,10 @@ export default function CheckoutPage() {
     // Scroll to top on mount
     window.scrollTo(0, 0);
 
+    // Ensure scrolling is enabled (fix for potential stuck overflow: hidden)
+    document.body.style.overflow = 'auto';
+    document.body.classList.remove('modal-open', 'offcanvas-open');
+
     const backdrops = document.querySelectorAll('.modal-backdrop, .offcanvas-backdrop');
     backdrops.forEach(backdrop => backdrop.remove());
 

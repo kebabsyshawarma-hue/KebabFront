@@ -1,8 +1,10 @@
 import { forwardRef, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { useCart } from '../context/CartContext.jsx';
 
 const Navbar = forwardRef(({ totalItems, navbarBackground, onMenuClick, onContactClick }, ref) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { openCart } = useCart();
 
   const handleLinkClick = () => {
     setIsMenuOpen(false);
@@ -59,10 +61,10 @@ const Navbar = forwardRef(({ totalItems, navbarBackground, onMenuClick, onContac
           <div className="relative flex-shrink-0">
             <button
               type="button"
-              data-bs-toggle="offcanvas"
-              data-bs-target="#cartOffcanvas"
-              aria-controls="cartOffcanvas"
-              onClick={handleLinkClick}
+              onClick={() => {
+                handleLinkClick();
+                openCart();
+              }}
               style={{
                 backgroundColor: 'transparent',
                 border: '1px solid rgba(255, 215, 0, 0.4)',

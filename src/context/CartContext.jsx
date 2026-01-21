@@ -31,6 +31,10 @@ const CartContext = createContext(undefined);
 export const CartProvider = ({ children }) => {
   const [cart, setCart] = useState([]);
   const [deliveryFee, setDeliveryFee] = useState(0);
+  const [isCartOpen, setIsCartOpen] = useState(false);
+
+  const openCart = () => setIsCartOpen(true);
+  const closeCart = () => setIsCartOpen(false);
 
   const addToCart = (product) => {
     setCart((prevCart) => {
@@ -40,6 +44,7 @@ export const CartProvider = ({ children }) => {
           item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item
         );
       } else {
+        setIsCartOpen(true); // Open cart when adding item
         return [...prevCart, { ...product, quantity: 1 }];
       }
     });
@@ -74,7 +79,21 @@ export const CartProvider = ({ children }) => {
   const total = subtotal + deliveryFee;
 
   return (
-    <CartContext.Provider value={{ cart, addToCart, increaseQuantity, decreaseQuantity, removeFromCart, clearCart, total, subtotal, deliveryFee, setDeliveryFee }}>
+    <CartContext.Provider value={{ 
+      cart, 
+      addToCart, 
+      increaseQuantity, 
+      decreaseQuantity, 
+      removeFromCart, 
+      clearCart, 
+      total, 
+      subtotal, 
+      deliveryFee, 
+      setDeliveryFee,
+      isCartOpen,
+      openCart,
+      closeCart
+    }}>
       {children}
     </CartContext.Provider>
   );

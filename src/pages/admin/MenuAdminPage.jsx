@@ -161,9 +161,9 @@ export default function MenuAdminPage() {
             <div key={item.id} className="bg-[#111] border border-white/5 rounded-2xl overflow-hidden group hover:border-[#FFD700]/30 transition-all">
               <div className="h-48 overflow-hidden relative">
                 <img src={item.image} alt={item.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                <div className="absolute top-2 right-2 flex gap-1">
-                  <button onClick={() => handleEdit(item)} className="w-8 h-8 rounded-full bg-black/50 text-white hover:bg-[#FFD700] hover:text-black flex items-center justify-center backdrop-blur-sm transition-colors"><i className="bi bi-pencil-fill text-xs"></i></button>
-                  <button onClick={() => handleDelete(item.id)} className="w-8 h-8 rounded-full bg-black/50 text-white hover:bg-red-500 flex items-center justify-center backdrop-blur-sm transition-colors"><i className="bi bi-trash-fill text-xs"></i></button>
+                <div className="absolute top-2 right-2 flex gap-2 z-10">
+                  <button onClick={() => handleEdit(item)} className="w-9 h-9 rounded-full bg-black/80 text-white hover:bg-[#FFD700] hover:text-black flex items-center justify-center backdrop-blur-md transition-all border border-white/10 shadow-lg"><i className="bi bi-pencil-fill text-sm"></i></button>
+                  <button onClick={() => handleDelete(item.id)} className="w-9 h-9 rounded-full bg-black/80 text-white hover:bg-red-500 flex items-center justify-center backdrop-blur-md transition-all border border-white/10 shadow-lg"><i className="bi bi-trash-fill text-sm"></i></button>
                 </div>
               </div>
               <div className="p-4">

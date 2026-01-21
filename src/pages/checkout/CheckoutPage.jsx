@@ -5,7 +5,7 @@ import styles from '../../styles/checkout.module.css';
 import { db } from '../../firebase.js';
 import { runTransaction, collection, doc, serverTimestamp } from 'firebase/firestore';
 import AddressMap from '../../components/AddressMap.jsx';
-import { DELIVERY_ZONES, findZoneByNeighborhood } from '../../data/deliveryZones.js';
+import { DELIVERY_ZONES, findZoneByNeighborhood, getZoneByDistance } from '../../data/deliveryZones.js';
 
 // --- Constants ---
 // DELIVERY_ZONES moved to src/data/deliveryZones.js
@@ -47,22 +47,27 @@ export default function CheckoutPage() {
   }, []);
 
   const handleLocationSelect = (locationData) => {
-    const { address, neighborhood, rawAddress } = locationData;
+    const { lat, lng, address, neighborhood, rawAddress } = locationData;
     
     // Update address field with the formatted address from OSM
-    // We truncate if it's too long or just use it as is.
     setCustomerDetails(prev => ({
       ...prev,
       address: address
     }));
 
     // Try to auto-select zone
+    // 1. Try by Neighborhood Name (Priority)
     let foundZone = findZoneByNeighborhood(neighborhood);
     
-    // Fallback: check other address fields
+    // 2. Fallback: check other address fields for keywords
     if (!foundZone && rawAddress) {
-       const searchString = `${rawAddress.suburb || ''} ${rawAddress.neighbourhood || ''} ${rawAddress.village || ''} ${rawAddress.residential || ''}`;
+       const searchString = `${rawAddress.suburb || ''} ${rawAddress.neighbourhood || ''} ${rawAddress.village || ''} ${rawAddress.residential || ''} ${rawAddress.city_district || ''}`;
        foundZone = findZoneByNeighborhood(searchString);
+    }
+
+    // 3. Fallback: Calculation by Distance (Plan B)
+    if (!foundZone) {
+      foundZone = getZoneByDistance(lat, lng);
     }
 
     if (foundZone) {
@@ -71,11 +76,6 @@ export default function CheckoutPage() {
         zone: foundZone.id
       }));
       setDeliveryFee(foundZone.fee);
-    } else {
-       // Zone not found automatically
-       // We don't reset zone if they already picked one manually to avoid annoyance,
-       // unless the new address is definitely different. 
-       // For now, let's just alert them visually via the UI state (zone selector value).
     }
   };
 

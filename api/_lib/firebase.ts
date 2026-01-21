@@ -1,27 +1,44 @@
-﻿import admin from 'firebase-admin';
+import admin from 'firebase-admin';
 import { existsSync, readFileSync } from 'fs';
 import path from 'path';
-
-type ServiceAccountConfig = admin.ServiceAccount & { project_id: string };
 
 function normalizePrivateKey(rawKey: string): string {
   if (!rawKey) return '';
   
-  console.log(`[Debug] Raw Key Length: ${rawKey.length}`);
-  console.log(`[Debug] Raw Key Start: ${rawKey.substring(0, 20)}...`);
-  console.log(`[Debug] Raw Key End: ...${rawKey.substring(rawKey.length - 20)}`);
+  // Debug logging (masked)
+  console.log(`[Firebase Debug] Processing Private Key. Length: ${rawKey.length}`);
+  
+  let key = rawKey;
+  
+  // 1. Remove wrapping double quotes if present (common in .env files)
+  if (key.startsWith("'") && key.endsWith("'")) {
+    console.log('[Firebase Debug] Removing wrapping double quotes');
+    key = key.slice(1, -1);
+  }
+  
+  // 2. Remove wrapping single quotes if present
+  if (key.startsWith("'") && key.endsWith("'")) {
+    console.log('[Firebase Debug] Removing wrapping single quotes');
+    key = key.slice(1, -1);
+  }
 
-  // 1. Remove wrapping quotes and standard clean
-  let key = rawKey.replace(/^"|"$/g, '');
-
-  // 2. Check if it handles literal escaped newlines (common in JSON/Env)
+  // 3. Handle escaped newlines (literal "\n" characters)
+  // This is common when keys are pasted into Vercel UI or JSON strings
   if (key.includes('\\n')) {
-    console.log('[Debug] Replacing escaped newlines');
+    console.log('[Firebase Debug] Replacing literal escaped newlines (\\n) with real newlines');
     key = key.replace(/\\n/g, '\n');
+  }
+
+  // 4. Ensure correct PEM formatting
+  // Sometimes keys lose the dashes or headers if copied poorly, though harder to fix automatically.
+  // We mainly check if it looks roughly right.
+  if (!key.includes('-----BEGIN PRIVATE KEY-----')) {
+    console.warn('[Firebase Warning] Private Key does not start with standard PEM header. This might fail.');
   }
 
   return key;
 }
+
 function buildCredential(): admin.credential.Credential {
   const {
     FIREBASE_PROJECT_ID,
@@ -30,62 +47,78 @@ function buildCredential(): admin.credential.Credential {
     FIREBASE_SERVICE_ACCOUNT_PATH,
   } = process.env;
 
-  console.log(`[Firebase Init] CWD: ${process.cwd()}`);
+  console.log(`[Firebase Init] Initializing... Project ID: ${FIREBASE_PROJECT_ID ? 'Set' : 'Missing'}`);
 
   // Strategy 1: Explicit Env Var Path
   if (FIREBASE_SERVICE_ACCOUNT_PATH) {
     const envPath = path.resolve(process.cwd(), FIREBASE_SERVICE_ACCOUNT_PATH);
-    console.log(`[Firebase Init] Checking Env Path: ${envPath}`);
     if (existsSync(envPath)) {
-      console.log('[Firebase Init] Found via Env Path');
+      console.log(`[Firebase Init] Loading credentials from file: ${envPath}`);
       try {
         return admin.credential.cert(JSON.parse(readFileSync(envPath, 'utf8')));
-      } catch (e) { console.error('JSON Parse Error:', e); }
+      } catch (e) { 
+        console.error('[Firebase Init] Failed to parse credential file:', e);
+      }
     }
   }
 
-  // Strategy 2: Scan common locations for service-account.json
+  // Strategy 2: Scan common locations
   const candidates = [
     'service-account.json',
-    '../service-account.json',
-    '../../service-account.json',
     path.join(process.cwd(), 'service-account.json')
   ];
 
   for (const candidate of candidates) {
     const resolved = path.resolve(candidate);
-    // console.log(`[Firebase Init] Checking Candidate: ${resolved}`); // Optional verbose log
     if (existsSync(resolved)) {
-      console.log(`[Firebase Init] Found JSON at: ${resolved}`);
+      console.log(`[Firebase Init] Found service-account.json at: ${resolved}`);
       try {
         return admin.credential.cert(JSON.parse(readFileSync(resolved, 'utf8')));
-      } catch (e) { console.error('JSON Parse Error:', e); }
+      } catch (e) { 
+        console.error('[Firebase Init] Failed to parse local JSON:', e);
+      }
     }
   }
 
   // FALLBACK: Environment Variables
-  console.log('[Firebase Init] Falling back to Env Vars...');
+  console.log('[Firebase Init] Attempting to use Environment Variables');
+  
   if (FIREBASE_PROJECT_ID && FIREBASE_PRIVATE_KEY && FIREBASE_CLIENT_EMAIL) {
     try {
-      return admin.credential.cert({
+      const normalizedKey = normalizePrivateKey(FIREBASE_PRIVATE_KEY);
+      
+      const cred = admin.credential.cert({
         projectId: FIREBASE_PROJECT_ID,
-        privateKey: normalizePrivateKey(FIREBASE_PRIVATE_KEY),
+        privateKey: normalizedKey,
         clientEmail: FIREBASE_CLIENT_EMAIL,
       });
+      
+      console.log('[Firebase Init] Credential object created successfully.');
+      return cred;
     } catch (error) {
-       console.error('[Firebase] Failed to init with Env Vars:', (error as Error).message);
+       console.error('[Firebase Init] FATAL ERROR creating credential from Env Vars:', error);
+       // Throwing here will cause the 500 error "A server error...", 
+       // but we need to stop execution if we can't connect.
+       throw error; 
     }
   }
 
-  throw new Error('No Firebase credentials found. Provide service-account.json in root or Env Vars.');
+  console.error('[Firebase Init] Missing required Environment Variables (FIREBASE_PROJECT_ID, FIREBASE_PRIVATE_KEY, FIREBASE_CLIENT_EMAIL)');
+  throw new Error('Firebase Initialization Failed: Missing Credentials');
 }
 
-if (!admin.apps.length) {
-  admin.initializeApp({
-    credential: buildCredential(),
-  });
+// Initialize App
+try {
+  if (!admin.apps.length) {
+    admin.initializeApp({
+      credential: buildCredential(),
+    });
+    console.log('[Firebase Init] App Initialized Successfully');
+  }
+} catch (error) {
+  console.error('[Firebase Init] Global Initialization Error:', error);
+  // We re-throw so the process crashes, as we can't run without DB
+  throw error;
 }
 
 export const db = admin.firestore();
-
-

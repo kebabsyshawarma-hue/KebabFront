@@ -35,6 +35,26 @@ export default function AdminDashboard() {
   // Sound State
   const [soundEnabled, setSoundEnabled] = useState(true);
   const prevOrdersLength = useRef(0);
+  const audioUnlocked = useRef(false);
+
+  // Function to unlock audio on first interaction
+  const unlockAudio = () => {
+    if (audioUnlocked.current) return;
+    const audio = new Audio('https://cdn.freesound.org/previews/536/536108_1415754-lq.mp3');
+    audio.volume = 0.01; // Almost silent
+    audio.play()
+      .then(() => {
+        audioUnlocked.current = true;
+        console.log("Audio unlocked successfully");
+        window.removeEventListener('click', unlockAudio);
+      })
+      .catch(e => console.log("Audio still locked:", e));
+  };
+
+  useEffect(() => {
+    window.addEventListener('click', unlockAudio);
+    return () => window.removeEventListener('click', unlockAudio);
+  }, []);
 
   useEffect(() => {
     const q = query(collection(db, 'orders'), orderBy('createdAt', 'desc'));

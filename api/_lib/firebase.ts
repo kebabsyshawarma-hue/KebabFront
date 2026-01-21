@@ -8,32 +8,44 @@ function normalizePrivateKey(rawKey: string): string {
   // Debug logging (masked)
   console.log(`[Firebase Debug] Processing Private Key. Length: ${rawKey.length}`);
   
-  let key = rawKey;
+  let key = rawKey.trim(); // Trim whitespace first
   
-  // 1. Remove wrapping double quotes if present (common in .env files)
-  if (key.startsWith("'") && key.endsWith("'")) {
+  // 1. Remove wrapping quotes (single or double)
+  // Check double quotes
+  if (key.startsWith('"') && key.endsWith('"')) {
     console.log('[Firebase Debug] Removing wrapping double quotes');
     key = key.slice(1, -1);
   }
-  
-  // 2. Remove wrapping single quotes if present
+  // Check single quotes
   if (key.startsWith("'") && key.endsWith("'")) {
     console.log('[Firebase Debug] Removing wrapping single quotes');
     key = key.slice(1, -1);
   }
 
-  // 3. Handle escaped newlines (literal "\n" characters)
-  // This is common when keys are pasted into Vercel UI or JSON strings
+  // 2. Handle literal escaped newlines (\n) - Common in Vercel Env Vars
   if (key.includes('\\n')) {
-    console.log('[Firebase Debug] Replacing literal escaped newlines (\\n) with real newlines');
+    console.log('[Firebase Debug] Replacing literal escaped newlines (\\n)');
     key = key.replace(/\\n/g, '\n');
   }
 
-  // 4. Ensure correct PEM formatting
-  // Sometimes keys lose the dashes or headers if copied poorly, though harder to fix automatically.
-  // We mainly check if it looks roughly right.
-  if (!key.includes('-----BEGIN PRIVATE KEY-----')) {
-    console.warn('[Firebase Warning] Private Key does not start with standard PEM header. This might fail.');
+  // 3. Aggressive Repair: Check if Headers are missing or malformed
+  const beginTag = '-----BEGIN PRIVATE KEY-----';
+  const endTag = '-----END PRIVATE KEY-----';
+
+  // If the key doesn't start with the tag, we might have a naked key or a corrupted one.
+  if (!key.includes(beginTag)) {
+    console.warn('[Firebase Warning] Key is missing BEGIN header. Attempting to repair...');
+    // Clean up potential garbage (like "MII..." at start if user just copied the body)
+    // We assume the user pasted the base64 content
+    const cleanBody = key.replace(/ /g, '').replace(/\n/g, ''); // Remove all whitespace/newlines from body to reform it
+    
+    // Check if it looks like base64 (simplified check)
+    if (cleanBody.length > 100) {
+       // Reconstruct PEM
+       // Format: Header + Body (chunked 64 chars) + Footer is ideal, but mostly just header+body+footer works
+       key = `${beginTag}\n${cleanBody}\n${endTag}`;
+       console.log('[Firebase Debug] Key reconstructed with headers.');
+    }
   }
 
   return key;

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { db } from '../../firebase';
 import { collection, query, orderBy, onSnapshot, doc, updateDoc } from 'firebase/firestore';
 
@@ -31,16 +31,30 @@ export default function AdminDashboard() {
   const [itemsPerPage] = useState(10);
   const [filterStatus, setFilterStatus] = useState('All');
   const [searchTerm, setSearchTerm] = useState('');
+  
+  // Sound State
+  const [soundEnabled, setSoundEnabled] = useState(true);
+  const prevOrdersLength = useRef(0);
 
   useEffect(() => {
     const q = query(collection(db, 'orders'), orderBy('createdAt', 'desc'));
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const ordersData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      
+      // Play sound if new order arrived
+      if (ordersData.length > prevOrdersLength.current && !loading) {
+        if (soundEnabled) {
+          const audio = new Audio('/notification.mp3');
+          audio.play().catch(e => console.error("Error playing sound:", e));
+        }
+      }
+      prevOrdersLength.current = ordersData.length;
+
       setOrders(ordersData);
       setLoading(false);
     });
     return () => unsubscribe();
-  }, []);
+  }, [soundEnabled, loading]); // Added soundEnabled dependency to capture latest state but careful with re-subs. Actually soundEnabled in effect might be stale if not in dep array, but re-subscribing is costly. Better to use ref for soundEnabled or just live with re-sub. Re-sub is fine here.
 
   const handleStatusChange = async (orderId, newStatus) => {
     try {
@@ -98,9 +112,18 @@ export default function AdminDashboard() {
       
       {/* Header & Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <div className="md:col-span-2">
-          <h1 className="text-3xl font-bold text-white mb-1">Dashboard</h1>
-          <p className="text-gray-400 text-sm">Resumen de pedidos en tiempo real</p>
+        <div className="md:col-span-2 flex justify-between items-start">
+          <div>
+            <h1 className="text-3xl font-bold text-white mb-1">Dashboard</h1>
+            <p className="text-gray-400 text-sm">Resumen de pedidos en tiempo real</p>
+          </div>
+          <button 
+            onClick={() => setSoundEnabled(!soundEnabled)}
+            className={`p-2 rounded-full border transition-all ${soundEnabled ? 'bg-[#FFD700]/20 border-[#FFD700] text-[#FFD700]' : 'bg-white/5 border-white/10 text-gray-500'}`}
+            title={soundEnabled ? "Silenciar Alarma" : "Activar Alarma"}
+          >
+            <i className={`bi ${soundEnabled ? 'bi-volume-up-fill' : 'bi-volume-mute-fill'} text-xl`}></i>
+          </button>
         </div>
         
         {/* Quick Stats Cards */}

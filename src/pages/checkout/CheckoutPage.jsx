@@ -124,14 +124,16 @@ export default function CheckoutPage() {
       : `${customerDetails.address} ${customerDetails.addressDetails ? `(${customerDetails.addressDetails})` : ''}`;
 
     try {
-      const newOrderRef = await runTransaction(db, async (transaction) => {
+      const { newOrderRef, shortOrderId } = await runTransaction(db, async (transaction) => {
         const counterRef = doc(db, 'counters', 'orders');
         const counterDoc = await transaction.get(counterRef);
         let newId = counterDoc.exists() ? counterDoc.data().lastId + 1 : 1;
         transaction.set(counterRef, { lastId: newId }, { merge: true });
 
+        const sId = newId.toString();
+
         const orderPayload = {
-          shortOrderId: newId.toString(),
+          shortOrderId: sId,
           customerDetails: { ...customerDetails, address: fullAddress },
           items: cart,
           subtotal,
@@ -146,23 +148,23 @@ export default function CheckoutPage() {
 
         const newOrderDocRef = doc(collection(db, "orders"));
         transaction.set(newOrderDocRef, orderPayload);
-        return newOrderDocRef;
+        return { newOrderRef: newOrderDocRef, shortOrderId: sId };
       });
 
       if (paymentMethod === 'wompi') {
-        handleWompiPayment(newOrderRef.id);
+        handleWompiPayment(newOrderRef.id, shortOrderId);
         return;
       }
 
       clearCart();
-      navigate('/checkout/success', { state: { paymentMethod, orderId: newOrderRef.id, total } });
+      navigate('/checkout/success', { state: { paymentMethod, orderId: shortOrderId, total } });
     } catch (err) {
       setError(err.message || 'Error al realizar el pedido.');
       setIsSubmitting(false);
     }
   };
 
-  const handleWompiPayment = async (orderId) => {
+  const handleWompiPayment = async (orderId, shortOrderId) => {
     try {
       const reference = `kebab_${orderId}`;
       const response = await fetch('/api/getWompiSignature', {
@@ -188,7 +190,7 @@ export default function CheckoutPage() {
       checkout.open((result) => {
         if (result.transaction.status === 'APPROVED') {
           clearCart();
-          navigate('/checkout/success', { state: { paymentMethod: 'wompi', orderId, total, transactionId: result.transaction.id } });
+          navigate('/checkout/success', { state: { paymentMethod: 'wompi', orderId: shortOrderId, total, transactionId: result.transaction.id } });
         } else {
           navigate('/checkout/rejected');
         }

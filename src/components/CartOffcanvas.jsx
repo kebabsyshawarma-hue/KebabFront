@@ -38,13 +38,13 @@ export default function CartOffcanvas({ handleProceedToCheckout }) {
     <>
       {/* Backdrop */}
       <div 
-        className={`fixed inset-0 bg-black/60 backdrop-blur-sm z-[60] transition-opacity duration-300 ${isCartOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}
+        className={`fixed inset-0 bg-black/60 backdrop-blur-sm z-[1040] transition-opacity duration-300 ${isCartOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}
         onClick={closeCart}
       />
 
       {/* Sidebar */}
       <div 
-        className={`fixed top-0 right-0 h-full w-full sm:w-[400px] bg-[#111] border-l border-white/10 z-[70] transform transition-transform duration-300 shadow-2xl flex flex-col ${isCartOpen ? 'translate-x-0' : 'translate-x-full'}`}
+        className={`fixed top-0 right-0 h-full w-full sm:w-[400px] bg-[#111] border-l border-white/10 z-[1050] transform transition-transform duration-300 shadow-2xl flex flex-col ${isCartOpen ? 'translate-x-0' : 'translate-x-full'}`}
       >
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-white/10">

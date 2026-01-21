@@ -3,7 +3,7 @@ import React from 'react';
 const SocialWidgets = ({
   facebook = 'https://www.facebook.com/kebabcarta',
   instagram = 'https://www.instagram.com/kebabcarta',
-  whatsapp = 'https://wa.me/573000000000',
+  whatsapp = 'https://wa.me/573017186724',
 }) => {
   
   // Estilo base unificado

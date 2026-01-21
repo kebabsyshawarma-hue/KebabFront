@@ -1,5 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { db } from './_lib/firebase';
+import { db } from './_lib/firebase.js';
 
 // Define a type for the items in the order for type safety
 type Item = {

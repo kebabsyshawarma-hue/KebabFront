@@ -1,29 +1,69 @@
 import React from 'react';
-import styles from './SocialWidgets.module.css';
 
 const SocialWidgets = ({
   facebook = 'https://www.facebook.com/kebabcarta',
   instagram = 'https://www.instagram.com/kebabcarta',
-  twitter = 'https://twitter.com/kebabcarta',
+  whatsapp = 'https://wa.me/573000000000',
 }) => {
+  
+  // Estilo base unificado
+  const linkClass = `
+    flex items-center justify-center
+    w-12 h-12
+    bg-black/80
+    !text-[#FFD700] 
+    transition-all duration-300 ease-out
+    hover:w-16 hover:!bg-[#FFD700] hover:!text-black hover:!bg-opacity-100
+    cursor-pointer
+    group
+    relative
+    !no-underline
+    border-0
+    overflow-hidden
+  `;
+
   return (
-    <div className={styles["social-widgets"]}> {/* Apply the new class */}
+    <div className="fixed left-0 top-1/2 -translate-y-1/2 z-40 flex flex-col rounded-r-2xl overflow-hidden">
+      
+      {/* Facebook */}
       {facebook && (
-        <a href={facebook} target="_blank" rel="noopener noreferrer">
-          <i className="fab fa-facebook"></i>
+        <a 
+          href={facebook} 
+          target="_blank" 
+          rel="noopener noreferrer"
+          className={linkClass}
+          aria-label="Facebook"
+        >
+          <i className="fab fa-facebook-f text-xl group-hover:scale-125 transition-transform duration-300"></i>
         </a>
       )}
+
+      {/* Instagram */}
       {instagram && (
-        <a href={instagram} target="_blank" rel="noopener noreferrer">
-          <i className="fab fa-instagram"></i>
+        <a 
+          href={instagram} 
+          target="_blank" 
+          rel="noopener noreferrer"
+          // Líneas divisorias sutiles internas (blancas muy transparentes, no amarillas)
+          className={`${linkClass} border-t border-b border-white/10`} 
+          aria-label="Instagram"
+        >
+          <i className="fab fa-instagram text-2xl group-hover:scale-125 transition-transform duration-300"></i>
         </a>
       )}
-      {twitter && (
-        <a href={twitter} target="_blank" rel="noopener noreferrer">
-          <i className="fab fa-twitter"></i>
+
+      {/* WhatsApp */}
+      {whatsapp && (
+        <a 
+          href={whatsapp} 
+          target="_blank" 
+          rel="noopener noreferrer"
+          className={linkClass}
+          aria-label="WhatsApp"
+        >
+          <i className="fab fa-whatsapp text-2xl group-hover:scale-125 transition-transform duration-300"></i>
         </a>
       )}
-      {/* Add more social media icons here */}
     </div>
   );
 };

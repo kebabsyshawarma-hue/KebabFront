@@ -1,8 +1,6 @@
 import { useCart } from '../context/CartContext.jsx';
 import { useNavigate } from 'react-router-dom';
 import { useState, useEffect, useRef } from 'react';
-import styles from '../styles/menu.module.css';
-import menuSectionStyles from '../styles/menu-section.module.css';
 import Navbar from '../components/Navbar.jsx';
 import HeroSection from '../components/HeroSection.jsx';
 import CategoryNav from '../components/CategoryNav.jsx';
@@ -127,7 +125,7 @@ export default function HomePage() {
       const scrollPosition = window.scrollY;
 
       if (scrollPosition > 50) {
-        setNavbarBackground('#3e3d3f');
+        setNavbarBackground('rgba(10, 10, 10, 0.95)'); // Premium Black with slight transparency
         setIsScrolled(true);
       } else {
         setNavbarBackground('transparent');
@@ -247,14 +245,14 @@ export default function HomePage() {
 
   return (
     <>
-      <div style={{ backgroundColor: '#f8f9fa' }}>
+      <div className="bg-[#0f0f0f] min-h-screen text-white">
         <Navbar ref={navbarRef} totalItems={totalItems} navbarBackground={navbarBackground} onMenuClick={handleMenuButtonClick} onContactClick={handleContactClick} />
         <HeroSection heroSlides={heroSlides} isMobile={isMobile} isScrolled={isScrolled} />
         <CategoryNav categories={menu.categories} activeCategory={activeCategory} onCategoryClick={handleCategoryClick} isMenuFixed={isMenuFixed} navbarHeight={navbarRef.current?.offsetHeight || 80} categoryNavStyles={categoryNavStyles} />
-        <main id="menu" className={`${menuSectionStyles.menuSection} ${isScrolled ? menuSectionStyles.visible : ''}`}>
-          <div className={styles.pageContainer}>
+        <main id="menu" className={`relative z-10 transition-all duration-500 ${isScrolled ? 'opacity-100' : 'opacity-0'}`}>
+          <div className="w-full">
             {isMenuFixed && (
-              <div style={{ height: `${placeholderHeight}px` }} />
+              <div style={{ height: `${placeholderHeight}px` }} className="hidden md:block" />
             )}
             <MenuSection menu={menu} categoryRefs={categoryRefs} onSelectItem={setSelectedItem} />
           </div>

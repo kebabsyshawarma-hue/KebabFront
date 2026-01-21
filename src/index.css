@@ -1,3 +1,5 @@
+@import "tailwindcss" layer(utilities);
+
 :root {
   --background: #000000; /* Black background */
   --foreground: #FFD700; /* Gold/Yellow text */
@@ -45,6 +47,7 @@ body {
 
 body {
   overflow-y: auto;
+  overflow-x: hidden; /* Prevent horizontal scroll */
 }
 
 body > div[style*="position: fixed"][style*="z-index: 9999"],

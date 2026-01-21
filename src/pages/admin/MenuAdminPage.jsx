@@ -4,6 +4,7 @@ import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc } from 'firebase
 
 export default function MenuAdminPage() {
   const [products, setProducts] = useState([]);
+  const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
   const [currentProduct, setCurrentProduct] = useState(null);
@@ -16,19 +17,32 @@ export default function MenuAdminPage() {
     category: '',
     image: '',
     kcal: '',
-    tags: ''
+    tags: '',
+    order: 0
   });
 
-  const fetchProducts = async () => {
+  const fetchInitialData = async () => {
     setLoading(true);
-    const querySnapshot = await getDocs(collection(db, 'menu'));
-    const productsData = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-    setProducts(productsData);
-    setLoading(false);
+    try {
+      const [productsSnap, catsSnap] = await Promise.all([
+        getDocs(collection(db, 'menu')),
+        getDocs(collection(db, 'categories'))
+      ]);
+      
+      const productsData = productsSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      const catsData = catsSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      
+      setProducts(productsData);
+      setCategories(catsData);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
-    fetchProducts();
+    fetchInitialData();
   }, []);
 
   const handleEdit = (product) => {
@@ -41,14 +55,24 @@ export default function MenuAdminPage() {
       category: product.category,
       image: product.image,
       kcal: product.kcal || '',
-      tags: product.tags ? product.tags.join(', ') : ''
+      tags: product.tags ? product.tags.join(', ') : '',
+      order: product.order || 0
     });
   };
 
   const handleAddNew = () => {
     setIsEditing(true);
     setCurrentProduct(null);
-    setFormData({ name: '', description: '', price: '', category: '', image: '', kcal: '', tags: '' });
+    setFormData({ 
+      name: '', 
+      description: '', 
+      price: '', 
+      category: categories.length > 0 ? categories[0].name : '', 
+      image: '', 
+      kcal: '', 
+      tags: '',
+      order: products.length
+    });
   };
 
   const handleSave = async (e) => {
@@ -56,6 +80,7 @@ export default function MenuAdminPage() {
     const payload = {
       ...formData,
       price: Number(formData.price),
+      order: Number(formData.order),
       tags: formData.tags.split(',').map(t => t.trim()).filter(t => t)
     };
 
@@ -66,7 +91,7 @@ export default function MenuAdminPage() {
         await addDoc(collection(db, 'menu'), payload);
       }
       setIsEditing(false);
-      fetchProducts();
+      fetchInitialData();
     } catch (error) {
       console.error(error);
       alert('Error al guardar');
@@ -103,7 +128,18 @@ export default function MenuAdminPage() {
           <form onSubmit={handleSave} className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <input type="text" placeholder="Nombre" className="bg-black/50 border border-white/10 rounded-lg p-3 text-white focus:border-[#FFD700] outline-none" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} required />
             <input type="number" placeholder="Precio" className="bg-black/50 border border-white/10 rounded-lg p-3 text-white focus:border-[#FFD700] outline-none" value={formData.price} onChange={e => setFormData({...formData, price: e.target.value})} required />
-            <input type="text" placeholder="Categoría (Ej: Kebabs)" className="bg-black/50 border border-white/10 rounded-lg p-3 text-white focus:border-[#FFD700] outline-none" value={formData.category} onChange={e => setFormData({...formData, category: e.target.value})} required />
+            <select 
+              className="bg-black/50 border border-white/10 rounded-lg p-3 text-white focus:border-[#FFD700] outline-none" 
+              value={formData.category} 
+              onChange={e => setFormData({...formData, category: e.target.value})} 
+              required
+            >
+              <option value="">Selecciona una categoría...</option>
+              {categories.map(cat => (
+                <option key={cat.id} value={cat.name} className="bg-neutral-900">{cat.name}</option>
+              ))}
+            </select>
+            <input type="number" placeholder="Orden de aparición" className="bg-black/50 border border-white/10 rounded-lg p-3 text-white focus:border-[#FFD700] outline-none" value={formData.order} onChange={e => setFormData({...formData, order: e.target.value})} required />
             <input type="text" placeholder="URL Imagen" className="bg-black/50 border border-white/10 rounded-lg p-3 text-white focus:border-[#FFD700] outline-none" value={formData.image} onChange={e => setFormData({...formData, image: e.target.value})} required />
             <input type="text" placeholder="Kcal" className="bg-black/50 border border-white/10 rounded-lg p-3 text-white focus:border-[#FFD700] outline-none" value={formData.kcal} onChange={e => setFormData({...formData, kcal: e.target.value})} />
             <input type="text" placeholder="Tags (sep. por comas)" className="bg-black/50 border border-white/10 rounded-lg p-3 text-white focus:border-[#FFD700] outline-none" value={formData.tags} onChange={e => setFormData({...formData, tags: e.target.value})} />

@@ -14,6 +14,7 @@ export default function AdminLayout() {
   const navItems = [
     { path: '/admin', icon: 'bi-speedometer2', label: 'Dashboard' },
     { path: '/admin/menu', icon: 'bi-grid', label: 'Menú' },
+    { path: '/admin/categories', icon: 'bi-bookmarks', label: 'Categorías' },
     { path: '/admin/zones', icon: 'bi-geo-alt', label: 'Zonas' },
     { path: '/admin/hero', icon: 'bi-images', label: 'Banners' },
   ];

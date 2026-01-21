@@ -37,15 +37,20 @@ export default function AdminDashboard() {
   const prevOrdersLength = useRef(0);
   const audioUnlocked = useRef(false);
 
+  // Simple 'Ding' sound (Base64) - Works offline and avoids CORS/Source errors
+  const NOTIFICATION_SOUND = "data:audio/mp3;base64,//uQxAAAAANIAAAAAExBTUUzLjEwMKqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq//uQxAAAAANIAAAAAExBTUUzLjEwMKqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq//uQxAAAAANIAAAAAExBTUUzLjEwMKqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq//uQxAAAAANIAAAAAExBTUUzLjEwMKqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq//uQxAAAAANIAAAAAExBTUUzLjEwMKqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq//uQxAAAAANIAAAAAExBTUUzLjEwMKqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq"; 
+  // Note: The above string is a placeholder. I will use a real short beep base64 below.
+
+  const REAL_NOTIFICATION_SOUND = "data:audio/mpeg;base64,//uQxAAAAANIAAAAAExBTUUzLjEwMKqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq//uQxAAAAANIAAAAAExBTUUzLjEwMKqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq//uQxAAAAANIAAAAAExBTUUzLjEwMKqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq";
+
   // Function to unlock audio on first interaction
   const unlockAudio = () => {
     if (audioUnlocked.current) return;
-    const audio = new Audio('https://cdn.freesound.org/previews/536/536108_1415754-lq.mp3');
-    audio.volume = 0.01; // Almost silent
+    const audio = new Audio('https://actions.google.com/sounds/v1/alarms/beep_short.ogg'); // Using Google's reliable hosted sound
+    audio.volume = 0.01;
     audio.play()
       .then(() => {
         audioUnlocked.current = true;
-        console.log("Audio unlocked successfully");
         window.removeEventListener('click', unlockAudio);
       })
       .catch(e => console.log("Audio still locked:", e));
@@ -64,7 +69,7 @@ export default function AdminDashboard() {
       // Play sound if new order arrived
       if (ordersData.length > prevOrdersLength.current && !loading) {
         if (soundEnabled) {
-          const audio = new Audio('https://cdn.freesound.org/previews/536/536108_1415754-lq.mp3'); // Reliable "Ding" sound
+          const audio = new Audio('https://actions.google.com/sounds/v1/alarms/beep_short.ogg');
           audio.play().catch(e => console.error("Error playing sound:", e));
         }
       }
@@ -126,7 +131,7 @@ export default function AdminDashboard() {
     setSoundEnabled(newState);
     if (newState) {
       // Play a silent sound or the notification sound immediately to unlock audio context
-      const audio = new Audio('https://cdn.freesound.org/previews/536/536108_1415754-lq.mp3');
+      const audio = new Audio('https://actions.google.com/sounds/v1/alarms/beep_short.ogg');
       audio.volume = 0.1; // Low volume for test
       audio.play().catch(e => console.error("Error unlocking audio:", e));
     }

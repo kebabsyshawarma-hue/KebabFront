@@ -44,7 +44,7 @@ export default function AdminDashboard() {
       // Play sound if new order arrived
       if (ordersData.length > prevOrdersLength.current && !loading) {
         if (soundEnabled) {
-          const audio = new Audio('/sounds/notification.mp3');
+          const audio = new Audio('https://cdn.freesound.org/previews/536/536108_1415754-lq.mp3'); // Reliable "Ding" sound
           audio.play().catch(e => console.error("Error playing sound:", e));
         }
       }

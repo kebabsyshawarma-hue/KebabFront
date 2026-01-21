@@ -75,6 +75,18 @@ export default function AdminDashboard() {
 
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
+  // Calculate stats for today
+  const isToday = (date) => {
+    if (!date) return false;
+    const today = new Date();
+    const d = date.toDate();
+    return d.getDate() === today.getDate() &&
+      d.getMonth() === today.getMonth() &&
+      d.getFullYear() === today.getFullYear();
+  };
+
+  const ordersToday = orders.filter(o => isToday(o.createdAt));
+
   if (loading) return (
     <div className="flex items-center justify-center h-full text-[#FFD700]">
       <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#FFD700]"></div>
@@ -95,7 +107,7 @@ export default function AdminDashboard() {
         <div className="bg-[#111] border border-white/10 p-4 rounded-2xl flex items-center justify-between">
           <div>
             <span className="text-xs text-gray-500 uppercase tracking-wider block">Pedidos Hoy</span>
-            <span className="text-2xl font-bold text-white">{orders.length}</span>
+            <span className="text-2xl font-bold text-white">{ordersToday.length}</span>
           </div>
           <div className="w-10 h-10 rounded-full bg-[#FFD700]/10 flex items-center justify-center text-[#FFD700]">
             <i className="bi bi-bag-check-fill"></i>

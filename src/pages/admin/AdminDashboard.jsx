@@ -36,12 +36,8 @@ export default function AdminDashboard() {
   const [soundEnabled, setSoundEnabled] = useState(true);
   const prevOrdersLength = useRef(0);
   const audioUnlocked = useRef(false);
-
-  // Simple 'Ding' sound (Base64) - Works offline and avoids CORS/Source errors
-  const NOTIFICATION_SOUND = "data:audio/mp3;base64,//uQxAAAAANIAAAAAExBTUUzLjEwMKqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq//uQxAAAAANIAAAAAExBTUUzLjEwMKqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq//uQxAAAAANIAAAAAExBTUUzLjEwMKqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq//uQxAAAAANIAAAAAExBTUUzLjEwMKqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq//uQxAAAAANIAAAAAExBTUUzLjEwMKqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq//uQxAAAAANIAAAAAExBTUUzLjEwMKqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq"; 
-  // Note: The above string is a placeholder. I will use a real short beep base64 below.
-
-  const REAL_NOTIFICATION_SOUND = "data:audio/mpeg;base64,//uQxAAAAANIAAAAAExBTUUzLjEwMKqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq//uQxAAAAANIAAAAAExBTUUzLjEwMKqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq//uQxAAAAANIAAAAAExBTUUzLjEwMKqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq";
+  const [showNewOrderModal, setShowNewOrderModal] = useState(false);
+  const [newOrdersCount, setNewOrdersCount] = useState(0);
 
   // Function to unlock audio on first interaction
   const unlockAudio = () => {
@@ -68,8 +64,13 @@ export default function AdminDashboard() {
       
       // Play sound if new order arrived
       if (ordersData.length > prevOrdersLength.current && !loading) {
+        const addedCount = ordersData.length - prevOrdersLength.current;
+        setNewOrdersCount(prev => prev + addedCount);
+        setShowNewOrderModal(true);
+
         if (soundEnabled) {
           const audio = new Audio('https://actions.google.com/sounds/v1/alarms/beep_short.ogg');
+          audio.volume = 1.0; // MAX VOLUME
           audio.play().catch(e => console.error("Error playing sound:", e));
         }
       }
@@ -316,6 +317,32 @@ export default function AdminDashboard() {
           </div>
         )}
       </div>
+
+      {/* New Order Notification Modal */}
+      {showNewOrderModal && (
+        <div className="fixed inset-0 z-[2000] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-300">
+          <div className="bg-[#111] border border-[#FFD700] rounded-3xl p-8 max-w-sm w-full text-center shadow-[0_0_50px_rgba(255,215,0,0.2)] animate-in zoom-in duration-300">
+            <div className="w-20 h-20 bg-[#FFD700] rounded-full flex items-center justify-center mx-auto mb-6 shadow-[0_0_20px_rgba(255,215,0,0.4)]">
+              <i className="bi bi-bell-fill text-black text-4xl animate-bounce"></i>
+            </div>
+            <h2 className="text-3xl font-black text-white mb-2 uppercase tracking-tighter" style={{ fontFamily: 'Playfair Display, serif' }}>
+              ¡Nuevo Pedido!
+            </h2>
+            <p className="text-gray-400 mb-8">
+              Has recibido {newOrdersCount} {newOrdersCount === 1 ? 'pedido nuevo' : 'pedidos nuevos'} en tiempo real.
+            </p>
+            <button 
+              onClick={() => {
+                setShowNewOrderModal(false);
+                setNewOrdersCount(0);
+              }}
+              className="w-full py-4 bg-[#FFD700] hover:bg-yellow-400 text-black font-black text-lg rounded-2xl transition-all shadow-lg shadow-yellow-900/20 uppercase tracking-widest"
+            >
+              Ver Pedidos
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

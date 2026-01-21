@@ -44,7 +44,7 @@ export default function AdminDashboard() {
       // Play sound if new order arrived
       if (ordersData.length > prevOrdersLength.current && !loading) {
         if (soundEnabled) {
-          const audio = new Audio('/notification.mp3');
+          const audio = new Audio('/sounds/notification.mp3');
           audio.play().catch(e => console.error("Error playing sound:", e));
         }
       }

@@ -101,6 +101,17 @@ export default function AdminDashboard() {
 
   const ordersToday = orders.filter(o => isToday(o.createdAt));
 
+  const toggleSound = () => {
+    const newState = !soundEnabled;
+    setSoundEnabled(newState);
+    if (newState) {
+      // Play a silent sound or the notification sound immediately to unlock audio context
+      const audio = new Audio('https://cdn.freesound.org/previews/536/536108_1415754-lq.mp3');
+      audio.volume = 0.1; // Low volume for test
+      audio.play().catch(e => console.error("Error unlocking audio:", e));
+    }
+  };
+
   if (loading) return (
     <div className="flex items-center justify-center h-full text-[#FFD700]">
       <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#FFD700]"></div>
@@ -118,7 +129,7 @@ export default function AdminDashboard() {
             <p className="text-gray-400 text-sm">Resumen de pedidos en tiempo real</p>
           </div>
           <button 
-            onClick={() => setSoundEnabled(!soundEnabled)}
+            onClick={toggleSound}
             className={`p-2 rounded-full border transition-all ${soundEnabled ? 'bg-[#FFD700]/20 border-[#FFD700] text-[#FFD700]' : 'bg-white/5 border-white/10 text-gray-500'}`}
             title={soundEnabled ? "Silenciar Alarma" : "Activar Alarma"}
           >

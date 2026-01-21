@@ -1,6 +1,6 @@
 Manual de Entrega: Plataforma Web Kebab & Shawarma
-Fecha: 17 de Enero de 2026
-Versión: 1.0.0
+Fecha: 21 de Enero de 2026
+Versión: 1.1.0
 
 1. Resumen del Proyecto
 
@@ -11,10 +11,19 @@ Simultáneamente, ofrece un Panel de Administración privado que permite al equi
 2. Características Principales
 
 Para el Cliente (Pública)
-El sitio web ofrece un menú interactivo con una visualización elegante de productos, organizados claramente por categorías como Entradas, Platos Fuertes y Bebidas. Incluye un carrito de compras intuitivo que calcula totales automáticamente y un proceso de pago integrado con Wompi para mayor seguridad. Adicionalmente, cuenta con una página dedicada donde los usuarios pueden rastrear el estado de su pedido usando su ID de compra. El diseño es totalmente responsivo, adaptándose perfectamente a celulares, tablets y computadoras.
+- **Menú Interactivo:** Visualización elegante de productos con efectos de zoom y detalles rápidos.
+- **Carrito de Compras Premium:** Gestión intuitiva de productos con cálculo automático de totales.
+- **Sistema de Geolocalización (OpenStreetMap):** Permite al cliente marcar su ubicación exacta en un mapa interactivo (totalmente gratuito, sin costos de API).
+- **Cálculo Automático de Domicilio:** El sistema identifica el barrio o calcula la distancia desde el local (Los Ejecutivos) para asignar automáticamente la tarifa de envío correcta ($5.000, $8.000 o $12.000).
+- **Pagos Integrados:** Conexión con Wompi para tarjetas, PSE y transferencias bancarias.
+- **Rastreo en Vivo:** Página dedicada para seguir el progreso del pedido con línea de tiempo animada.
+- **Diseño Ultra-Premium:** Estética oscura, urbana y profesional optimizada para móviles y escritorio.
 
 Para el Administrador (Privada)
-El sistema cuenta con un Dashboard de Pedidos centralizado para monitorear todas las órdenes entrantes y actualizar su estado (por ejemplo, notificar que un pedido va "En Camino"). También incluye herramientas completas para la gestión del menú y sus categorías, permitiendo crear, editar y reordenar productos y secciones fácilmente. Además, se ofrece una interfaz para gestionar la portada del sitio, facilitando el cambio de imágenes promocionales en la página de inicio.
+- **Dashboard Moderno:** Panel de control con estilo SaaS para monitorear pedidos en tiempo real.
+- **Gestión de Estados:** Actualización fluida del ciclo del pedido (Pendiente -> Cocina -> Listo -> Entregado).
+- **Control de Inventario:** Editor visual de productos y categorías con funciones de arrastrar y soltar (Drag & Drop).
+- **Banners Dinámicos:** Gestión del carrusel principal (Hero) para actualizar promociones visuales fácilmente.
 
 3. Acceso al Panel Administrativo
 
@@ -26,16 +35,18 @@ Contraseña: AdminSeguro2025.
 
 Nota de Seguridad: Recomendamos cerrar sesión al finalizar sus tareas administrativas para proteger la información del negocio.
 
-4. Guía de Uso
+4. Guía de Uso de Nuevas Funciones
 
-A. Gestión de Pedidos
-Inicie sesión en el panel y diríjase a la pantalla principal. Allí verá la lista de pedidos recientes. Al seleccionar "Ver Detalles" en cualquier orden, podrá revisar la información completa del cliente y los productos. Utilice el selector de estado para actualizar el progreso del pedido; estos cambios se reflejarán inmediatamente para el cliente.
+A. Uso del Mapa en Checkout
+Al finalizar el pedido, el cliente verá un botón "Buscar mi dirección en el mapa". Al activarlo, puede:
+1. Pulsar "Usar mi ubicación" para que el GPS detecte su casa.
+2. Tocar el mapa para ajustar el punto de entrega.
+El sistema escribirá la dirección y seleccionará el barrio y precio del domicilio automáticamente.
 
-B. Gestión de Categorías
-En la sección de menú, encontrará una pestaña dedicada a las Categorías. Aquí puede crear nuevas secciones (como Promociones o Postres). Una característica importante es que puede arrastrar y soltar las categorías para cambiar el orden en que aparecen en el sitio web público, permitiendo resaltar ciertas secciones según la temporada.
+B. Gestión de Zonas de Domicilio
+Los valores y barrios están configurados en el sistema de forma híbrida:
+- **Prioridad 1:** Coincidencia por nombre de barrio (ej: Gaviotas, El Campestre).
+- **Prioridad 2:** Si el barrio no es reconocido, se calcula la distancia en línea recta (Radio de 2km, 5km y 10km) para asignar el precio.
 
-C. Gestión de Productos
-Dentro de la pestaña de Productos, puede agregar nuevos ítems o editar los existentes. Al crear un producto, podrá asignarle una categoría, descripción, precio, imagen y calorías. También puede arrastrar los productos dentro de su categoría para organizar el orden visual en que el cliente los verá.
-
-D. Cambiar Imágenes de Portada
-Seleccione "Gestión Hero" en el menú lateral. Aquí podrá subir nuevas imágenes para el carrusel principal de la página de inicio, lo cual es ideal para destacar nuevas promociones o eventos.
+C. Branding Limitless Solutions
+Se ha integrado la firma de desarrollador de forma elegante en el pie de página, permitiendo atraer nuevos clientes interesados en la tecnología de la plataforma.

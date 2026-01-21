@@ -2,9 +2,9 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCart } from '../../context/CartContext.jsx';
 import { db } from '../../firebase.js';
-import { runTransaction, collection, doc, serverTimestamp } from 'firebase/firestore';
+import { runTransaction, collection, doc, serverTimestamp, getDocs } from 'firebase/firestore';
 import AddressMap from '../../components/AddressMap.jsx';
-import { DELIVERY_ZONES, findZoneByNeighborhood, getZoneByDistance } from '../../data/deliveryZones.js';
+import { findZoneByNeighborhood, getZoneByDistance } from '../../utils/deliveryUtils.js';
 
 export default function CheckoutPage() {
   const { cart, total, subtotal, deliveryFee, setDeliveryFee, clearCart, decreaseQuantity, increaseQuantity, removeFromCart } = useCart();
@@ -22,6 +22,25 @@ export default function CheckoutPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState(null);
   const [showMap, setShowMap] = useState(false);
+  const [zones, setZones] = useState([]);
+
+  useEffect(() => {
+    const fetchZones = async () => {
+      try {
+        const querySnapshot = await getDocs(collection(db, 'deliveryZones'));
+        const zonesData = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        // Sort zones: Pickup usually last or specific order. For now, maybe by fee or name?
+        // Let's sort by fee to show cheapest first, or just keep order.
+        // If 'pickup' should be last or first, we can handle it.
+        // Let's put 'pickup' at the end or begining.
+        zonesData.sort((a, b) => a.fee - b.fee);
+        setZones(zonesData);
+      } catch (err) {
+        console.error("Error fetching zones:", err);
+      }
+    };
+    fetchZones();
+  }, []);
 
   useEffect(() => {
     // Scroll to top on mount
@@ -46,13 +65,13 @@ export default function CheckoutPage() {
     const { lat, lng, address, neighborhood, rawAddress } = locationData;
     setCustomerDetails(prev => ({ ...prev, address }));
 
-    let foundZone = findZoneByNeighborhood(neighborhood);
+    let foundZone = findZoneByNeighborhood(neighborhood, zones);
     if (!foundZone && rawAddress) {
        const searchString = `${rawAddress.suburb || ''} ${rawAddress.neighbourhood || ''} ${rawAddress.village || ''} ${rawAddress.residential || ''} ${rawAddress.city_district || ''}`;
-       foundZone = findZoneByNeighborhood(searchString);
+       foundZone = findZoneByNeighborhood(searchString, zones);
     }
     if (!foundZone) {
-      foundZone = getZoneByDistance(lat, lng);
+      foundZone = getZoneByDistance(lat, lng, zones);
     }
 
     if (foundZone) {
@@ -63,7 +82,7 @@ export default function CheckoutPage() {
 
   const handleZoneChange = (e) => {
     const zoneId = e.target.value;
-    const zone = DELIVERY_ZONES.find(z => z.id === zoneId);
+    const zone = zones.find(z => z.id === zoneId);
     setCustomerDetails(prev => ({ ...prev, zone: zoneId }));
     setDeliveryFee(zone ? zone.fee : 0);
   };
@@ -118,7 +137,7 @@ export default function CheckoutPage() {
           status: 'Pending',
           fulfillmentStatus: 'Pedido recibido',
           createdAt: serverTimestamp(),
-          zoneName: DELIVERY_ZONES.find(z => z.id === customerDetails.zone)?.name || 'N/A'
+          zoneName: zones.find(z => z.id === customerDetails.zone)?.name || 'N/A'
         };
 
         const newOrderDocRef = doc(collection(db, "orders"));
@@ -269,7 +288,7 @@ export default function CheckoutPage() {
                     <select name="zone" value={customerDetails.zone} onChange={handleZoneChange} required 
                       className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-4 focus:ring-2 focus:ring-gold/50 outline-none appearance-none cursor-pointer">
                       <option value="">Seleccionar zona...</option>
-                      {DELIVERY_ZONES.map(z => (
+                      {zones.map(z => (
                         <option key={z.id} value={z.id} className="bg-neutral-900">{z.name}</option>
                       ))}
                     </select>

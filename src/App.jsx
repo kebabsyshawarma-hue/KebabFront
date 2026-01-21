@@ -9,6 +9,7 @@ import AdminLayout from './pages/admin/AdminLayout.jsx';
 import AdminDashboard from './pages/admin/AdminDashboard.jsx';
 import HeroAdminPage from './pages/admin/HeroAdminPage.jsx';
 import MenuAdminPage from './pages/admin/MenuAdminPage.jsx';
+import DeliveryZonesAdminPage from './pages/admin/DeliveryZonesAdminPage.jsx';
 import LoginPage from './pages/admin/LoginPage.jsx';
 import ProtectedRoute from './components/ProtectedRoute.jsx';
 import { AuthProvider } from './context/AuthContext.jsx';
@@ -28,6 +29,7 @@ function App() {
           <Route element={<AdminLayout />}>
             <Route index element={<AdminDashboard />} />
             <Route path="menu" element={<MenuAdminPage />} />
+            <Route path="zones" element={<DeliveryZonesAdminPage />} />
             <Route path="hero" element={<HeroAdminPage />} />
           </Route>
         </Route>

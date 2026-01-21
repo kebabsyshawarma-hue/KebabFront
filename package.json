@@ -17,8 +17,10 @@
     "bootstrap": "^5.3.8",
     "firebase": "^12.4.0",
     "firebase-admin": "^13.5.0",
+    "leaflet": "^1.9.4",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
+    "react-leaflet": "^5.0.0",
     "react-router-dom": "^7.9.4"
   },
   "devDependencies": {

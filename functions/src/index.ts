@@ -85,11 +85,16 @@ interface CustomerInfo {
 
 interface Order {
   id?: string;
-  customerInfo: CustomerInfo;
+  customerInfo?: CustomerInfo;
+  customerDetails?: CustomerInfo; // Frontend uses this sometimes
   orderItems: OrderItem[];
   total: number;
+  subtotal?: number;
+  deliveryFee?: number;
+  distanceKm?: number;
   status: string;
-  createdAt: admin.firestore.FieldValue;
+  fulfillmentStatus?: string;
+  createdAt: admin.firestore.FieldValue | admin.firestore.Timestamp;
 }
 
 export const getMenu = functions.https.onRequest(async (req, res) => {
@@ -440,7 +445,7 @@ export const addOrder = functions.https.onRequest(async (req, res) => {
 
     const normalizedOrder = {
       ...newOrder,
-      customerInfo: newOrder.customerInfo,
+      customerInfo: newOrder.customerInfo || newOrder.customerDetails, // Normalize here
       orderItems: newOrder.orderItems,
       status: 'Pending', // Default status for new orders
       createdAt: admin.firestore.FieldValue.serverTimestamp(),
@@ -538,4 +543,67 @@ export const setAdminClaim = functions.https.onRequest(async (req, res) => {
             res.status(500).json({ message: 'Error setting admin claim', error: error.message });
         }
     });
+});
+
+// --- Automations ---
+
+// 1. Trigger: When fulfillmentStatus changes to 'En preparación', set timestamp
+export const onOrderUpdate = functions.firestore
+  .document('orders/{orderId}')
+  .onUpdate(async (change, context) => {
+    const newData = change.after.data();
+    const oldData = change.before.data();
+
+    // Check if status changed TO 'En preparación'
+    if (newData.fulfillmentStatus === 'En preparación' && oldData.fulfillmentStatus !== 'En preparación') {
+      return change.after.ref.update({
+        preparationStartedAt: admin.firestore.FieldValue.serverTimestamp()
+      });
+    }
+    return null;
+  });
+
+// 2. Scheduled: Run every 5 minutes to check for orders that have been preparing for > 35 mins
+export const checkOrderTimeout = functions.pubsub.schedule('every 5 minutes').onRun(async (context) => {
+  const now = admin.firestore.Timestamp.now();
+  const thirtyFiveMinutesAgo = new admin.firestore.Timestamp(now.seconds - (35 * 60), 0);
+
+  try {
+    // Query orders that are 'En preparación'
+    // Note: To filter by 'preparationStartedAt' as well might require a composite index.
+    // For simplicity/safety without index creation prompts, we fetch all 'En preparación' and filter in code.
+    // If volume is high, a composite index is recommended: orders -> where fulfillmentStatus == 'En preparación' AND preparationStartedAt < X
+    
+    const ordersRef = db.collection('orders');
+    const snapshot = await ordersRef
+      .where('fulfillmentStatus', '==', 'En preparación')
+      .get();
+
+    const batch = db.batch();
+    let updatesCount = 0;
+
+    snapshot.forEach(doc => {
+      const data = doc.data();
+      if (data.preparationStartedAt) {
+        const prepTime = data.preparationStartedAt as admin.firestore.Timestamp;
+        // Check if prepTime is older than 35 minutes
+        if (prepTime.toMillis() <= thirtyFiveMinutesAgo.toMillis()) {
+          batch.update(doc.ref, { 
+            fulfillmentStatus: 'En reparto',
+            lastAutoUpdated: admin.firestore.FieldValue.serverTimestamp() 
+          });
+          updatesCount++;
+        }
+      }
+    });
+
+    if (updatesCount > 0) {
+      await batch.commit();
+      console.log(`Auto-updated ${updatesCount} orders to 'En reparto'.`);
+    }
+    return null;
+  } catch (error) {
+    console.error('Error in checkOrderTimeout:', error);
+    return null;
+  }
 });

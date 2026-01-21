@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { db } from '../../firebase';
-import { collection, getDocs, doc, updateDoc } from 'firebase/firestore';
+import { collection, getDocs, doc, updateDoc, onSnapshot } from 'firebase/firestore';
 
 // --- Theme & Styles ---
 const theme = {
@@ -120,6 +120,28 @@ const styles = {
     fontWeight: '600',
     border: `1px solid ${color}40`,
   }),
+  alarmOverlay: {
+    position: 'fixed',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(255, 0, 0, 0.3)',
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 9999,
+    animation: 'blink-bg 0.5s infinite alternate',
+  },
+  alarmBox: {
+    backgroundColor: '#fff',
+    padding: '3rem',
+    borderRadius: '20px',
+    textAlign: 'center',
+    boxShadow: '0 0 50px rgba(255,0,0,0.8)',
+    border: '5px solid #ff0000',
+  },
   modalOverlay: {
     backgroundColor: 'rgba(0,0,0,0.85)',
     backdropFilter: 'blur(5px)',
@@ -130,6 +152,22 @@ const styles = {
     boxShadow: '0 10px 25px rgba(0,0,0,0.5)',
     color: theme.text,
   },
+  toast: {
+    position: 'fixed',
+    top: '20px',
+    right: '20px',
+    backgroundColor: theme.success,
+    color: '#fff',
+    padding: '1rem 1.5rem',
+    borderRadius: '8px',
+    boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
+    zIndex: 1055,
+    animation: 'slideIn 0.3s ease-out',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '10px',
+    fontWeight: '600'
+  }
 };
 
 const getPaymentColor = (status) => {
@@ -152,6 +190,51 @@ const getFulfillmentColor = (status) => {
   }
 };
 
+const playNotificationSound = (stopRef) => {
+    try {
+      const AudioContext = window.AudioContext || window.webkitAudioContext;
+      if (!AudioContext) return null;
+      const ctx = new AudioContext();
+      
+      const playTone = () => {
+          if (stopRef.current) {
+              ctx.close();
+              return;
+          }
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.type = 'sawtooth';
+          osc.frequency.setValueAtTime(440, ctx.currentTime);
+          osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.2);
+          gain.gain.setValueAtTime(0.3, ctx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.4);
+          osc.start();
+          osc.stop(ctx.currentTime + 0.5);
+          setTimeout(playTone, 600);
+      };
+      
+      playTone();
+      return ctx;
+    } catch (e) {
+      console.error("Audio play failed", e);
+      return null;
+    }
+};
+
+// Add global styles for the blink animation
+if (typeof document !== 'undefined') {
+  const style = document.createElement('style');
+  style.innerHTML = `
+    @keyframes blink-bg {
+      from { background-color: rgba(255, 0, 0, 0.4); }
+      to { background-color: rgba(255, 215, 0, 0.4); }
+    }
+  `;
+  document.head.appendChild(style);
+}
+
 export default function AdminDashboard() {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -159,6 +242,12 @@ export default function AdminDashboard() {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
   const [paymentStatusFilter, setPaymentStatusFilter] = useState('All');
+  
+  // Notification State
+  const [newOrderNotification, setNewOrderNotification] = useState(null);
+  const isFirstLoad = useRef(true);
+  const stopAlarmRef = useRef(false);
+  const audioCtxRef = useRef(null);
 
   // Pagination State
   const [currentPage, setCurrentPage] = useState(1);
@@ -168,26 +257,54 @@ export default function AdminDashboard() {
   const [selectedOrder, setSelectedOrder] = useState(null);
 
   useEffect(() => {
-    async function fetchOrders() {
-      try {
-        const ordersCollection = collection(db, 'orders');
-        const ordersSnapshot = await getDocs(ordersCollection);
-        const data = ordersSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    const ordersCollection = collection(db, 'orders');
+    
+    // Use onSnapshot for real-time updates
+    const unsubscribe = onSnapshot(ordersCollection, (snapshot) => {
+        try {
+            const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            
+            const normalizedOrders = data.map((order) => ({
+                ...order,
+                customerInfo: order.customerInfo || order.customerDetails,
+                orderItems: order.orderItems || order.items,
+                fulfillmentStatus: order.fulfillmentStatus || 'Pedido recibido',
+                createdAt: order.createdAt // Keep original firestore timestamp object
+            }));
+            
+            // Sort orders
+            const sortedOrders = normalizedOrders.sort((a, b) => {
+                 const timeA = a.createdAt?.toMillis ? a.createdAt.toMillis() : 0;
+                 const timeB = b.createdAt?.toMillis ? b.createdAt.toMillis() : 0;
+                 return timeB - timeA;
+            });
 
-        const normalizedOrders = data.map((order) => ({
-          ...order,
-          customerInfo: order.customerInfo || order.customerDetails,
-          orderItems: order.orderItems || order.items,
-          fulfillmentStatus: order.fulfillmentStatus || 'Pedido recibido',
-        }));
-        setOrders(normalizedOrders.sort((a, b) => b.createdAt.toMillis() - a.createdAt.toMillis()));
-      } catch (e) {
-        setError(e.message);
-      } finally {
+            setOrders(sortedOrders);
+            setLoading(false);
+
+            // Check for new additions to trigger alarm
+            if (!isFirstLoad.current) {
+                snapshot.docChanges().forEach((change) => {
+                    if (change.type === "added") {
+                        stopAlarmRef.current = false;
+                        playNotificationSound(stopAlarmRef);
+                        setNewOrderNotification(`¡NUEVO PEDIDO RECIBIDO!`);
+                    }
+                });
+            } else {
+                isFirstLoad.current = false;
+            }
+
+        } catch (e) {
+            setError(e.message);
+            setLoading(false);
+        }
+    }, (error) => {
+        setError(error.message);
         setLoading(false);
-      }
-    }
-    fetchOrders();
+    });
+
+    return () => unsubscribe();
   }, []);
 
   // Reset pagination when filters change
@@ -214,6 +331,11 @@ export default function AdminDashboard() {
   const handleViewDetails = (order) => {
     setSelectedOrder(order);
     setShowModal(true);
+  };
+
+  const handleStopAlarm = () => {
+    stopAlarmRef.current = true;
+    setNewOrderNotification(null);
   };
 
   const filteredOrders = orders.filter((order) => {
@@ -462,6 +584,14 @@ export default function AdminDashboard() {
                   ))}
                 </ul>
                 <div className="text-end">
+                   {selectedOrder.deliveryFee > 0 && (
+                     <>
+                        <p style={{marginBottom: '0.2rem', color: theme.textMuted}}>Subtotal: ${(selectedOrder.subtotal || (selectedOrder.total - selectedOrder.deliveryFee)).toLocaleString('es-CO')}</p>
+                        <p style={{marginBottom: '0.2rem', color: theme.textMuted}}>
+                            Domicilio {selectedOrder.zoneName ? `(${selectedOrder.zoneName})` : ''}: ${selectedOrder.deliveryFee.toLocaleString('es-CO')}
+                        </p>
+                     </>
+                   )}
                    <h4 style={{color: theme.primary}}>Total: ${selectedOrder.total.toLocaleString('es-CO')}</h4>
                 </div>
               </div>
@@ -473,6 +603,37 @@ export default function AdminDashboard() {
         </div>
       )}
       {showModal && <div className="modal-backdrop fade show"></div>}
+      
+      {newOrderNotification && (
+          <AlarmOverlay message={newOrderNotification} onStop={handleStopAlarm} />
+      )}
     </div>
   );
+}
+
+function AlarmOverlay({ message, onStop }) {
+    return (
+        <div style={styles.alarmOverlay}>
+            <div style={styles.alarmBox}>
+                <h1 style={{ fontSize: '4rem', color: '#ff0000', fontWeight: '900', marginBottom: '1rem' }}>🔔 {message} 🔔</h1>
+                <p style={{ fontSize: '1.5rem', color: '#333', marginBottom: '2rem' }}>Se ha registrado un nuevo pedido en el sistema.</p>
+                <button 
+                    onClick={onStop}
+                    style={{
+                        backgroundColor: '#ff0000',
+                        color: '#fff',
+                        fontSize: '2rem',
+                        padding: '1rem 3rem',
+                        borderRadius: '50px',
+                        border: 'none',
+                        fontWeight: 'bold',
+                        cursor: 'pointer',
+                        boxShadow: '0 5px 15px rgba(0,0,0,0.3)'
+                    }}
+                >
+                    DETENER ALARMA Y VER PEDIDOS
+                </button>
+            </div>
+        </div>
+    );
 }

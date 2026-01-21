@@ -30,6 +30,7 @@ const CartContext = createContext(undefined);
 // Creamos el Proveedor del Contexto. Este componente envolverá nuestra aplicación.
 export const CartProvider = ({ children }) => {
   const [cart, setCart] = useState([]);
+  const [deliveryFee, setDeliveryFee] = useState(0);
 
   const addToCart = (product) => {
     setCart((prevCart) => {
@@ -66,12 +67,14 @@ export const CartProvider = ({ children }) => {
 
   const clearCart = () => {
     setCart([]);
+    setDeliveryFee(0);
   };
 
-  const total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  const subtotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  const total = subtotal + deliveryFee;
 
   return (
-    <CartContext.Provider value={{ cart, addToCart, increaseQuantity, decreaseQuantity, removeFromCart, clearCart, total }}>
+    <CartContext.Provider value={{ cart, addToCart, increaseQuantity, decreaseQuantity, removeFromCart, clearCart, total, subtotal, deliveryFee, setDeliveryFee }}>
       {children}
     </CartContext.Provider>
   );
